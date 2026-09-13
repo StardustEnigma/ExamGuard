@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShieldAlert, Users, AlertTriangle, Eye, Video, Mic, Bell, RefreshCw, Search, Filter, Activity } from 'lucide-react';
 import type { Candidate, TelemetryEvent } from './types';
+import { telemetrySocket } from './services/websocket';
 import { EvidenceModal } from './components/EvidenceModal';
 
 const INITIAL_CANDIDATES: Candidate[] = [
@@ -20,41 +21,43 @@ export default function App() {
   const [filterType, setFilterType] = useState<'ALL' | 'FLAGGED' | 'WARNING'>('ALL');
   const [activeAuditModal, setActiveAuditModal] = useState<{ event: TelemetryEvent; candidate: Candidate; } | null>(null);
 
+  // REAL-TIME WEBSOCKET INTEGRATION (Replaced fake setInterval)
   useEffect(() => {
-    const timer = setInterval(() => {
-      const randomCandidate = candidates[Math.floor(Math.random() * candidates.length)];
-      const sampleAlerts = [
-        { subtype: 'MULTIPLE_FACES_DETECTED', severity: 'CRITICAL' as const, penalty: 15, msg: 'Additional face observed in frame' },
-        { subtype: 'TAB_SWITCH_BLUR', severity: 'HIGH' as const, penalty: 12, msg: 'Exam window lost focus' },
-        { subtype: 'GAZE_DEVIATION', severity: 'MEDIUM' as const, penalty: 5, msg: 'Off-screen gaze sustained > 3.5s' },
-      ];
-      const alert = sampleAlerts[Math.floor(Math.random() * sampleAlerts.length)];
+    // 1. Connect to backend
+    telemetrySocket.connect();
 
-      const newEvent: TelemetryEvent = {
-        event_id: `evt_${Math.random().toString(36).substring(2, 9)}`,
-        student_id: randomCandidate.student_id,
-        timestamp: new Date().toLocaleTimeString(),
-        subtype: alert.subtype,
-        severity: alert.severity,
-        confidence: Number((0.85 + Math.random() * 0.14).toFixed(2)),
-        message: alert.msg,
-      };
-
+    // 2. Subscribe to incoming telemetry events
+    const unsubscribe = telemetrySocket.subscribe((newEvent) => {
       setEvents((prev) => [newEvent, ...prev.slice(0, 19)]);
+      
       setCandidates((prev) =>
         prev.map((c) => {
-          if (c.student_id === randomCandidate.student_id) {
-            const nextScore = Math.max(0, c.trust_score - alert.penalty);
-            const updated: Candidate = { ...c, trust_score: nextScore, status: nextScore < 60 ? 'FLAGGED' : c.status, last_violation: alert.subtype };
+          if (c.student_id === newEvent.student_id) {
+            // Calculate penalty based on severity
+            const penalty = newEvent.severity === 'CRITICAL' ? 15 : newEvent.severity === 'HIGH' ? 10 : 5;
+            const nextScore = Math.max(0, c.trust_score - penalty);
+            
+            const updated: Candidate = { 
+              ...c, 
+              trust_score: nextScore, 
+              status: nextScore < 60 ? 'FLAGGED' : c.status, 
+              last_violation: newEvent.subtype 
+            };
+            
             setSelectedCandidate((curr) => (curr?.student_id === c.student_id ? updated : curr));
             return updated;
           }
           return c;
         })
       );
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [candidates]);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+      telemetrySocket.disconnect();
+    };
+  }, []);
 
   const activeCount = candidates.filter((c) => c.status === 'ACTIVE').length;
   const flaggedCount = candidates.filter((c) => c.status === 'FLAGGED').length;
