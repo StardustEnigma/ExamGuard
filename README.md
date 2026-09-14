@@ -186,6 +186,8 @@ flowchart TB
 
 ## 📡 Event Telemetry & WebSocket Protocol
 
+> 📖 **Full Specification:** For complete REST API schemas, WebSocket payloads, S3 presigned snapshot workflows, Go structs, and TypeScript types for all team members, refer to **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)**.
+
 Rather than streaming heavy MP4 video, the extension sends compact, strongly-typed JSON payloads over WebSocket:
 
 ### Sample Payload: Vision Anomaly (Multiple Faces)
