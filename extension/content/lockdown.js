@@ -12,6 +12,11 @@ console.log("ExamGuard Lockdown loaded");
 
 let examActive = false;
 
+// Prevent duplicate tab-switch events
+let lastTabSwitchTime = 0;
+
+const TAB_SWITCH_COOLDOWN = 1000; // 1 second
+
 // --------------------------------------------
 // Start ExamGuard Lockdown
 // --------------------------------------------
@@ -129,7 +134,7 @@ function handleKeyboard(event) {
 
         reportViolation(
             "DEVTOOLS_ATTEMPT",
-            "HIGH", {
+            "CRITICAL", {
                 shortcut: "F12"
             }
         );
@@ -239,7 +244,7 @@ function blockDevToolsShortcut(event, shortcut) {
 
     reportViolation(
         "DEVTOOLS_ATTEMPT",
-        "HIGH", {
+        "CRITICAL", {
             shortcut: shortcut
         }
     );
@@ -280,6 +285,18 @@ function handleVisibilityChange() {
 
     if (document.visibilityState === "hidden") {
 
+        const now = Date.now();
+
+        // Ignore duplicate event
+        if (
+            now - lastTabSwitchTime <
+            TAB_SWITCH_COOLDOWN
+        ) {
+            return;
+        }
+
+        lastTabSwitchTime = now;
+
         reportViolation(
             "TAB_SWITCH_BLUR",
             "HIGH", {
@@ -296,6 +313,18 @@ function handleVisibilityChange() {
 function handleWindowBlur() {
 
     if (!examActive) return;
+
+    const now = Date.now();
+
+    // Ignore duplicate event
+    if (
+        now - lastTabSwitchTime <
+        TAB_SWITCH_COOLDOWN
+    ) {
+        return;
+    }
+
+    lastTabSwitchTime = now;
 
     reportViolation(
         "TAB_SWITCH_BLUR",
@@ -342,10 +371,18 @@ function handleFullscreenChange() {
     }
 }
 
+
+// --------------------------------------------
+// Telemetry Session Information
+// --------------------------------------------
+
+let examId = "";
+let sessionId = "";
+let studentId = "";
+
 // --------------------------------------------
 // Violation Reporter
 // --------------------------------------------
-
 function reportViolation(
     subtype,
     severity,
@@ -356,6 +393,16 @@ function reportViolation(
 
         type: "TELEMETRY_ANOMALY",
 
+        event_id: crypto.randomUUID(),
+
+        exam_id: examId,
+
+        session_id: sessionId,
+
+        student_id: studentId,
+
+        timestamp: new Date().toISOString(),
+
         category: "ENVIRONMENT",
 
         subtype: subtype,
@@ -364,9 +411,9 @@ function reportViolation(
 
         confidence: 1.0,
 
-        timestamp: new Date().toISOString(),
+        metrics: metrics,
 
-        metrics: metrics
+        message: `Environment anomaly detected: ${subtype}`
     };
 
     console.log(

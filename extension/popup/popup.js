@@ -1,22 +1,50 @@
-const statusElement =
-    document.getElementById("status");
+const statusElement = document.getElementById("status");
+const startButton = document.getElementById("startExam");
+const stopButton = document.getElementById("stopExam");
 
-const startButton =
-    document.getElementById("startExam");
+// --------------------------------------------
+// Update popup status
+// --------------------------------------------
 
-const stopButton =
-    document.getElementById("stopExam");
+function updateStatus(isActive) {
 
+    if (isActive) {
 
-// ============================================
-// START EXAM
-// ============================================
+        statusElement.textContent = "Exam Active";
+        statusElement.className = "status active";
+
+    } else {
+
+        statusElement.textContent = "Exam Not Started";
+        statusElement.className = "status inactive";
+    }
+}
+
+// --------------------------------------------
+// Load saved exam state
+// --------------------------------------------
+
+chrome.storage.local.get(
+    ["examActive"],
+    (result) => {
+
+        updateStatus(
+            result.examActive === true
+        );
+    }
+);
+
+// --------------------------------------------
+// Start Exam
+// --------------------------------------------
 
 startButton.addEventListener(
     "click",
     async() => {
 
-        console.log("[ExamGuard Popup] Start Exam clicked");
+        console.log(
+            "[ExamGuard Popup] Start Exam clicked"
+        );
 
         const tabs =
             await chrome.tabs.query({
@@ -43,15 +71,16 @@ startButton.addEventListener(
                 }
             );
 
+            // Save exam state
+            await chrome.storage.local.set({
+                examActive: true
+            });
+
             console.log(
                 "[ExamGuard Popup] START_EXAM sent successfully"
             );
 
-            statusElement.textContent =
-                "Exam Active";
-
-            statusElement.className =
-                "status active";
+            updateStatus(true);
 
         } catch (error) {
 
@@ -60,25 +89,22 @@ startButton.addEventListener(
                 error
             );
 
-            statusElement.textContent =
-                "Unable to start exam";
-
-            statusElement.className =
-                "status inactive";
+            updateStatus(false);
         }
     }
 );
 
-
-// ============================================
-// STOP EXAM
-// ============================================
+// --------------------------------------------
+// Stop Exam
+// --------------------------------------------
 
 stopButton.addEventListener(
     "click",
     async() => {
 
-        console.log("[ExamGuard Popup] Stop Exam clicked");
+        console.log(
+            "[ExamGuard Popup] Stop Exam clicked"
+        );
 
         const tabs =
             await chrome.tabs.query({
@@ -88,9 +114,7 @@ stopButton.addEventListener(
 
         const tab = tabs[0];
 
-        if (!tab || !tab.id) {
-            return;
-        }
+        if (!tab || !tab.id) return;
 
         try {
 
@@ -100,15 +124,16 @@ stopButton.addEventListener(
                 }
             );
 
+            // Save exam state
+            await chrome.storage.local.set({
+                examActive: false
+            });
+
             console.log(
                 "[ExamGuard Popup] STOP_EXAM sent successfully"
             );
 
-            statusElement.textContent =
-                "Exam Not Started";
-
-            statusElement.className =
-                "status inactive";
+            updateStatus(false);
 
         } catch (error) {
 
