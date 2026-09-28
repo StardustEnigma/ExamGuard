@@ -4,7 +4,7 @@
 > *An AI-Powered Browser Extension for Real-Time Camera- & Microphone-Based Proctoring with a High-Concurrency Go Backend.*
 
 [![Docker](https://img.shields.io/badge/Containerized-Docker%20%26%20Compose-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
-[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
 [![Extension Manifest](https://img.shields.io/badge/Extension-Manifest%20V3-4285F4?style=for-the-badge&logo=googlechrome)](https://developer.chrome.com/docs/extensions/mv3/)
 [![Edge AI](https://img.shields.io/badge/Edge%20AI-MediaPipe%20%2F%20TensorFlow.js-FF6F00?style=for-the-badge&logo=tensorflow)](https://developers.google.com/mediapipe)
 [![Dashboard](https://img.shields.io/badge/Frontend-React.js-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
@@ -324,7 +324,7 @@ To ensure a seamless development experience across all group members and avoid d
 ### Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows / macOS / Linux) installed and running.
 - **Google Chrome** or **Microsoft Edge** browser (to run and test the unpacked browser extension).
-- *(Optional)* Go `1.22+` and Node.js `v18+` only if you wish to run services standalone outside containers.
+- *(Optional)* Go `1.26+` and Node.js `v18+` only if you wish to run services standalone outside containers.
 
 ---
 
