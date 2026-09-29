@@ -21,7 +21,8 @@ export class AudioAnalyzer {
   private microphone: MediaStreamAudioSourceNode | null = null;
   private stream: MediaStream | null = null;
 
- private frequencyData: Uint8Array<ArrayBuffer> | null = null;
+  private frequencyData: Uint8Array<ArrayBuffer> | null = null;
+
   private running = false;
 
   private callback: ((event: AudioEvent) => void) | null = null;
@@ -72,39 +73,40 @@ export class AudioAnalyzer {
     }
   }
 
- private analyze(): void {
-  const analyser = this.analyser;
-  const frequencyData = this.frequencyData;
+  private analyze(): void {
+    const analyser = this.analyser;
+    const frequencyData = this.frequencyData;
 
-  if (
-    !this.running ||
-    analyser === null ||
-    frequencyData === null
-  ) {
-    return;
+    if (
+      !this.running ||
+      analyser === null ||
+      frequencyData === null
+    ) {
+      return;
+    }
+
+    analyser.getByteFrequencyData(frequencyData);
+
+    const volume = this.calculateVolume();
+    const speechEnergy = this.calculateSpeechEnergy();
+    const dominantFrequency =
+      this.calculateDominantFrequency();
+
+    if (volume > 20) {
+      const event = this.createEvent(
+        volume,
+        speechEnergy,
+        dominantFrequency
+      );
+
+      this.callback?.(event);
+    }
+
+    requestAnimationFrame(() => {
+      this.analyze();
+    });
   }
 
-  analyser.getByteFrequencyData(frequencyData);
-
-  const volume = this.calculateVolume();
-  const speechEnergy = this.calculateSpeechEnergy();
-  const dominantFrequency =
-    this.calculateDominantFrequency();
-
-  if (volume > 20) {
-    const event = this.createEvent(
-      volume,
-      speechEnergy,
-      dominantFrequency
-    );
-
-    this.callback?.(event);
-  }
-
-  requestAnimationFrame(() => {
-    this.analyze();
-  });
-}
   private calculateVolume(): number {
     const data = this.frequencyData;
 
@@ -144,6 +146,8 @@ export class AudioAnalyzer {
     const binWidth =
       sampleRate / analyser.fftSize;
 
+    // Human speech mainly occupies approximately
+    // the 300 Hz – 3400 Hz range.
     const minBin = Math.max(
       0,
       Math.floor(300 / binWidth)
@@ -208,6 +212,108 @@ export class AudioAnalyzer {
     return maxIndex * binWidth;
   }
 
+  /**
+   * Detect strong frequency peaks inside the
+   * human speech frequency range.
+   *
+   * This is a heuristic. It does NOT identify
+   * actual people, but can detect multiple
+   * strong speech-like frequency components.
+   */
+  private detectMultipleSpeechPeaks(): number {
+    const data = this.frequencyData;
+    const context = this.audioContext;
+    const analyser = this.analyser;
+
+    if (
+      data === null ||
+      context === null ||
+      analyser === null
+    ) {
+      return 0;
+    }
+
+    const binWidth =
+      context.sampleRate / analyser.fftSize;
+
+    const minFrequency = 300;
+    const maxFrequency = 3400;
+
+    const minBin = Math.max(
+      1,
+      Math.floor(minFrequency / binWidth)
+    );
+
+    const maxBin = Math.min(
+      data.length - 2,
+      Math.ceil(maxFrequency / binWidth)
+    );
+
+    let peaks = 0;
+
+    for (let i = minBin; i <= maxBin; i++) {
+      const current = data[i];
+      const previous = data[i - 1];
+      const next = data[i + 1];
+
+      if (
+        current === undefined ||
+        previous === undefined ||
+        next === undefined
+      ) {
+        continue;
+      }
+
+      // A frequency bin is considered a peak when
+      // it is stronger than its neighbours.
+      if (
+        current > previous &&
+        current > next &&
+        current > 45
+      ) {
+        peaks++;
+      }
+    }
+
+    return peaks;
+  }
+
+  /**
+   * Whispering usually has lower overall volume
+   * but can still contain noticeable speech-band
+   * energy.
+   */
+  private detectWhisper(
+    volume: number,
+    speechEnergy: number
+  ): boolean {
+    return (
+      volume >= 20 &&
+      volume < 32 &&
+      speechEnergy >= 18 &&
+      speechEnergy < 40
+    );
+  }
+
+  /**
+   * Multiple-speaker detection is based on several
+   * strong speech-band frequency peaks.
+   *
+   * This is a heuristic and should be treated as
+   * "possible multiple speech", not proof of
+   * multiple people.
+   */
+  private detectMultipleSpeakers(
+    speechEnergy: number
+  ): boolean {
+    const peaks = this.detectMultipleSpeechPeaks();
+
+    return (
+      speechEnergy > 30 &&
+      peaks >= 8
+    );
+  }
+
   private createEvent(
     volume: number,
     speechEnergy: number,
@@ -215,7 +321,20 @@ export class AudioAnalyzer {
   ): AudioEvent {
     let type: AudioEventType = "AUDIO_NOISE";
 
-    if (speechEnergy > 25) {
+    const multipleSpeakers =
+      this.detectMultipleSpeakers(speechEnergy);
+
+    const whisper =
+      this.detectWhisper(
+        volume,
+        speechEnergy
+      );
+
+    if (multipleSpeakers) {
+      type = "AUDIO_MULTIPLE_SPEAKERS";
+    } else if (whisper) {
+      type = "AUDIO_WHISPER";
+    } else if (speechEnergy > 25) {
       type = "AUDIO_SPEECH";
     }
 
@@ -227,9 +346,13 @@ export class AudioAnalyzer {
     return {
       type,
       timestamp: new Date().toISOString(),
-      confidence,
+      confidence: Number(
+        confidence.toFixed(2)
+      ),
       metrics: {
-        volume: Number(volume.toFixed(2)),
+        volume: Number(
+          volume.toFixed(2)
+        ),
         speechEnergy: Number(
           speechEnergy.toFixed(2)
         ),

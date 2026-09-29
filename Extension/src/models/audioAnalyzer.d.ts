@@ -22,6 +22,30 @@ export declare class AudioAnalyzer {
     private calculateVolume;
     private calculateSpeechEnergy;
     private calculateDominantFrequency;
+    /**
+     * Detect strong frequency peaks inside the
+     * human speech frequency range.
+     *
+     * This is a heuristic. It does NOT identify
+     * actual people, but can detect multiple
+     * strong speech-like frequency components.
+     */
+    private detectMultipleSpeechPeaks;
+    /**
+     * Whispering usually has lower overall volume
+     * but can still contain noticeable speech-band
+     * energy.
+     */
+    private detectWhisper;
+    /**
+     * Multiple-speaker detection is based on several
+     * strong speech-band frequency peaks.
+     *
+     * This is a heuristic and should be treated as
+     * "possible multiple speech", not proof of
+     * multiple people.
+     */
+    private detectMultipleSpeakers;
     private createEvent;
     stop(): void;
     private cleanup;
