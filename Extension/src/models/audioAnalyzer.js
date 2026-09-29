@@ -49,7 +49,7 @@ export class AudioAnalyzer {
         const volume = this.calculateVolume();
         const speechEnergy = this.calculateSpeechEnergy();
         const dominantFrequency = this.calculateDominantFrequency();
-        if (volume > 20) {
+        if (volume > 15) {
             const event = this.createEvent(volume, speechEnergy, dominantFrequency);
             this.callback?.(event);
         }
