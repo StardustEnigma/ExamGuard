@@ -20,11 +20,47 @@
             Exam Proctoring Sentinel
         </p>
 
+        <!-- Login Section -->
+
+        <div id="loginSection">
+
+            <label for="examKey">
+                Exam Key
+            </label>
+
+            <input id="examKey" type="text" value="exam_2026_cs501" placeholder="Enter exam key">
+
+            <label for="studentId">
+                Student ID
+            </label>
+
+            <input id="studentId" type="text" value="50" placeholder="Enter student ID">
+
+            <label for="secretPin">
+                Secret PIN
+            </label>
+
+            <input id="secretPin" type="password" value="5678" placeholder="Enter PIN">
+
+            <button id="loginButton">
+                Login
+            </button>
+
+            <div id="loginStatus" class="login-status">
+                Not logged in
+            </div>
+
+        </div>
+
+        <hr>
+
+        <!-- Exam Status -->
+
         <div id="status" class="status inactive">
             Exam Not Started
         </div>
 
-        <button id="startExam">
+        <button id="startExam" disabled>
             Start Exam
         </button>
 
