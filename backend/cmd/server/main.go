@@ -28,7 +28,9 @@ func main() {
 
 	// ---- Load Configuration ----
 	cfg := config.Load()
-
+	log.Printf("[config] Server port: %s | PostgreSQL: %s:%d | Redis: %s | MinIO: %s",
+		cfg.Port, cfg.PostgresHost, cfg.PostgresPort, cfg.RedisAddr, cfg.MinIOEndpoint,
+	)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

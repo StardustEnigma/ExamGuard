@@ -10,6 +10,7 @@ import (
 )
 
 // NewPostgresPool creates a connection pool to PostgreSQL with health-checked retry logic.
+
 func NewPostgresPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
@@ -21,20 +22,38 @@ func NewPostgresPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	config.MaxConnLifetime = 30 * time.Minute
 	config.MaxConnIdleTime = 5 * time.Minute
 
-	var pool *pgxpool.Pool
+	var lastErr error
+
 	for i := 0; i < 10; i++ {
-		pool, err = pgxpool.NewWithConfig(ctx, config)
-		if err == nil {
-			if pingErr := pool.Ping(ctx); pingErr == nil {
+		pool, err := pgxpool.NewWithConfig(ctx, config)
+
+		if err != nil {
+			lastErr = err
+		} else {
+			lastErr = pool.Ping(ctx)
+
+			if lastErr == nil {
 				log.Println("[postgres] connection pool established")
 				return pool, nil
 			}
+
 			pool.Close()
 		}
-		log.Printf("[postgres] connection attempt %d/10 failed, retrying in 2s...", i+1)
-		time.Sleep(2 * time.Second)
+
+		log.Printf(
+			"[postgres] connection attempt %d/10 failed: %v",
+			i+1, lastErr,
+		)
+
+		if i < 9 {
+			time.Sleep(2 * time.Second)
+		}
 	}
-	return nil, fmt.Errorf("postgres: failed to connect after 10 attempts: %w", err)
+
+	return nil, fmt.Errorf(
+		"postgres: failed to connect after 10 attempts: %w",
+		lastErr,
+	)
 }
 
 // RunMigrations creates all tables required by ExamGuard if they don't exist.
