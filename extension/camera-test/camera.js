@@ -21,9 +21,15 @@ async function startCamera() {
 
             await ExamGuardVision.initializeFaceDetector();
 
-            console.log("MediaPipe initialization successful");
+            console.log("Face Detector initialization successful");
 
-            status.textContent = "Face detector ready";
+            status.textContent = "Initializing Head Pose...";
+
+            await ExamGuardHeadPose.initializeHeadPoseEstimator();
+
+            console.log("Face Landmarker initialization successful");
+
+            status.textContent = "Face Detector + Head Pose ready";
 
             detectFaces();
 
@@ -49,6 +55,10 @@ async function startCamera() {
 
 function detectFaces() {
     const result = ExamGuardVision.detectFaces(video);
+
+    const headPoseResult = ExamGuardHeadPose.estimateHeadPose(video);
+
+    console.log("Head pose result:", headPoseResult);
 
     console.log("Face detection result:", result);
 
