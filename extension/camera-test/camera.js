@@ -53,13 +53,13 @@ function detectFaces() {
     console.log("Face detection result:", result);
 
     if (result.faceCount === 0) {
-        status.textContent = "No face detected";
+        status.textContent = "FACE_NOT_DETECTED";
     } 
     else if (result.faceCount === 1) {
-        status.textContent = "1 face detected";
+        status.textContent = "NORMAL";
     } 
     else {
-        status.textContent = `${result.faceCount} faces detected`;
+        status.textContent = "MULTIPLE_FACES_DETECTED";
     }
 
     requestAnimationFrame(detectFaces);
