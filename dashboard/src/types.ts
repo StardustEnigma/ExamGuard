@@ -41,6 +41,12 @@ export interface Candidate {
   hasDot?: boolean;
   camera_active?: boolean;
   microphone_active?: boolean;
+  screen_active?: boolean;
+  ip_address?: string;
+  device?: string;
+  biometric_match?: number;
+  seat_number?: string;
+  screen_preview?: string;
 }
 
 export interface InvigilatorActionPayload {
