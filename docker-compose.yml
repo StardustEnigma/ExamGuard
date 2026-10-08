@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-examguard_secret_2026}
       POSTGRES_DB: ${POSTGRES_DB:-examguard_db}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -48,7 +48,7 @@ services:
   # MinIO S3-Compatible Object Storage (Snapshots)
   # -------------------------------------------------------
   minio:
-    image: minio/minio:latest
+    image: cgr.dev/chainguard/minio:latest
     container_name: examguard-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -61,8 +61,8 @@ services:
     volumes:
       - minio_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000"]
+      interval: 5s
       timeout: 5s
       retries: 5
     networks:
@@ -88,6 +88,7 @@ services:
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET: ${MINIO_BUCKET_NAME:-examguard-evidence}
       JWT_SECRET: ${JWT_SECRET:-super_secret_examguard_jwt_key_2026}
     ports:
       - "8080:8080"
@@ -95,6 +96,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     networks:
       - examguard-net
