@@ -246,8 +246,10 @@ export default function App() {
                 const isSelected = selectedCandidate?.student_id === c.student_id;
 
                 const progressBarColor = isDanger
-                  ? 'bg-rose-500'
-                  : 'bg-[#EAB308]';
+                  ? 'bg-gradient-to-r from-rose-500 to-red-500'
+                  : c.trust_score < 85
+                  ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
+                  : 'bg-gradient-to-r from-emerald-400 to-teal-500';
 
                 return (
                   <div
@@ -312,6 +314,7 @@ export default function App() {
               candidate={selectedCandidate}
               onWarn={(studentId) => handleProctorAction('WARN', studentId)}
               onLock={(studentId) => handleProctorAction('LOCK', studentId)}
+              onTerminate={(studentId) => handleProctorAction('TERMINATE', studentId)}
             />
 
             {/* 2. Live AI Diagnostics Feed Component */}

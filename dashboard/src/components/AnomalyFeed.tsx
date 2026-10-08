@@ -20,6 +20,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       severity: 'CRITICAL',
       title: 'CRITICAL | Multi-Face Detected',
       badgeBg: 'bg-[#FEE2E2] text-[#B91C1C]',
+      time: '15:04:12',
       tags: [{ label: 'Vision', icon: Eye, color: 'bg-[#DCFCE7] text-[#15803D]' }],
       studentId: '50',
     },
@@ -28,6 +29,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       severity: 'HIGH',
       title: 'HIGH | Tab Switched',
       badgeBg: 'bg-[#FEF3C7] text-[#B45309]',
+      time: '15:03:48',
       tags: [
         { label: 'Audio', icon: Volume2, color: 'bg-[#E0F2FE] text-[#0369A1]' },
         { label: 'System', icon: Monitor, color: 'bg-[#F1F5F9] text-[#475569]' },
@@ -39,6 +41,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       severity: 'MEDIUM',
       title: 'MEDIUM | Gaze Deviation',
       badgeBg: 'bg-[#DBEAFE] text-[#1D4ED8]',
+      time: '15:02:15',
       tags: [{ label: 'System', icon: Monitor, color: 'bg-[#F1F5F9] text-[#475569]' }],
       studentId: '46',
     },
@@ -47,6 +50,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       severity: 'LOW',
       title: 'LOW | Mic Anomaly',
       badgeBg: 'bg-[#F1F5F9] text-[#475569]',
+      time: '15:00:50',
       tags: [
         { label: 'Audio', icon: Volume2, color: 'bg-[#E0F2FE] text-[#0369A1]' },
         { label: 'System', icon: Monitor, color: 'bg-[#F1F5F9] text-[#475569]' },
@@ -92,13 +96,18 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-bold text-slate-900 tracking-tight">
-        Live AI Diagnostics Feed
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+          Live AI Diagnostics Feed
+        </h3>
+        <span className="text-[11px] text-slate-500 font-mono">
+          Edge:8080 • Active
+        </span>
+      </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-xs space-y-2.5 max-h-[310px] overflow-y-auto">
         {events.length === 0 ? (
-          // Exact rows matching the reference image layout
+          // Exact rows matching the approved single-line layout
           defaultItems.map((item) => (
             <div
               key={item.id}
@@ -107,7 +116,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
                 const mockEvent: TelemetryEvent = {
                   event_id: item.id,
                   student_id: item.studentId,
-                  timestamp: '15:04:02',
+                  timestamp: item.time,
                   subtype: item.title.split('|')[1]?.trim() || 'VIOLATION',
                   severity: item.severity as any,
                   confidence: 0.98,
@@ -115,11 +124,16 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
                 };
                 if (candidate) onSelectEvent(mockEvent, candidate);
               }}
-              className="flex items-center justify-between gap-2 p-1 hover:bg-slate-50/80 rounded-xl transition-colors cursor-pointer"
+              className="flex items-center justify-between gap-2 p-1.5 hover:bg-slate-50/90 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200"
             >
-              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-tight ${item.badgeBg}`}>
-                {item.title}
-              </span>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-tight shrink-0 ${item.badgeBg}`}>
+                  {item.title}
+                </span>
+                <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+                  {item.time}
+                </span>
+              </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
                 {item.tags.map((t, idx) => {
@@ -146,11 +160,16 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
               <div
                 key={e.event_id}
                 onClick={() => candidate && onSelectEvent(e, candidate)}
-                className="flex items-center justify-between gap-2 p-1 hover:bg-slate-50/80 rounded-xl transition-colors cursor-pointer"
+                className="flex items-center justify-between gap-2 p-1.5 hover:bg-slate-50/90 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200"
               >
-                <span className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-tight ${pill.style}`}>
-                  {pill.title}
-                </span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-tight shrink-0 ${pill.style}`}>
+                    {pill.title}
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+                    {e.timestamp || 'Just now'}
+                  </span>
+                </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   {pill.tags.map((t, idx) => {
