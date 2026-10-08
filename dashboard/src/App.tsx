@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldAlert, Users, AlertTriangle, Eye, Video, Mic, Bell, RefreshCw, Search, Filter, Activity } from 'lucide-react';
+import { ShieldAlert, Users, AlertTriangle, Eye, Video, Mic, RefreshCw, Search, Activity } from 'lucide-react';
 import type { Candidate, TelemetryEvent } from './types';
 import { telemetrySocket } from './services/websocket';
 import { EvidenceModal } from './components/EvidenceModal';

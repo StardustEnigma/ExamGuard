@@ -56,12 +56,14 @@ func main() {
 	}
 	defer rdb.Close()
 
-	// ---- Connect to MinIO ----
+	// ---- Connect to MinIO (Non-fatal fallback if unavailable) ----
 	minioClient, err := storage.NewMinIOClient(
 		ctx, cfg.MinIOEndpoint, cfg.MinIOAccessKey, cfg.MinIOSecretKey, cfg.MinIOBucket, cfg.MinIOUseSSL,
 	)
 	if err != nil {
-		log.Fatalf("[FATAL] MinIO: %v", err)
+		log.Printf("⚠️  [WARN] MinIO: failed to connect: %v", err)
+		log.Println("⚠️  [WARN] Continuing without MinIO. Snapshot features will run in mock mode.")
+		minioClient = nil
 	}
 
 	// ---- Initialize Scoring Engine ----

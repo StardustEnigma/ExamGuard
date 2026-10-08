@@ -25,8 +25,20 @@ class WebSocketService {
 
     this.ws.onmessage = (event) => {
       try {
-        const data: TelemetryEvent = JSON.parse(event.data);
-        this.callbacks.forEach(cb => cb(data));
+        const raw = JSON.parse(event.data);
+        // Handle both wrapped INCIDENT_ALERT / payload packets and raw TelemetryEvent packets
+        let data: TelemetryEvent | null = null;
+        if (raw?.type === 'INCIDENT_ALERT' && raw?.payload) {
+          data = raw.payload as TelemetryEvent;
+        } else if (raw?.payload && (raw.payload.event_id || raw.payload.student_id)) {
+          data = raw.payload as TelemetryEvent;
+        } else if (raw?.event_id || raw?.student_id) {
+          data = raw as TelemetryEvent;
+        }
+
+        if (data) {
+          this.callbacks.forEach(cb => cb(data));
+        }
       } catch (error) {
         console.error('🔴 [ExamGuard] Malformed telemetry packet:', error);
       }
@@ -57,5 +69,6 @@ class WebSocketService {
   }
 }
 
-// Default Go backend URL (Atharva ko yahi port use karne bolna)
-export const telemetrySocket = new WebSocketService('ws://localhost:8080/ws');
+// Go backend WebSocket endpoint
+const defaultWsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname || 'localhost'}:8080/ws/invigilator?token=inv_token&exam_id=exam_2026_cs501`;
+export const telemetrySocket = new WebSocketService((import.meta as any).env?.VITE_WS_URL || defaultWsUrl);

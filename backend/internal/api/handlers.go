@@ -101,6 +101,7 @@ func (s *Server) SetupRoutes(r *gin.Engine) {
 	}
 
 	// --- WebSocket endpoints (JWT via query param) ---
+	r.GET("/ws", s.handleInvigilatorWS)
 	r.GET("/ws/telemetry", s.handleTelemetryWS)
 	r.GET("/ws/invigilator", s.handleInvigilatorWS)
 }
@@ -133,12 +134,16 @@ func (s *Server) handleHealth(c *gin.Context) {
 	// Check MinIO
 	minioStatus := "UP"
 	minioLatency := float64(0)
-	start = time.Now()
-	_, err := s.minioClient.BucketExists(ctx, s.cfg.MinIOBucket)
-	if err != nil {
-		minioStatus = "DOWN"
+	if s.minioClient != nil {
+		start = time.Now()
+		_, err := s.minioClient.BucketExists(ctx, s.cfg.MinIOBucket)
+		if err != nil {
+			minioStatus = "DOWN"
+		}
+		minioLatency = float64(time.Since(start).Microseconds()) / 1000.0
+	} else {
+		minioStatus = "DOWN (FALLBACK)"
 	}
-	minioLatency = float64(time.Since(start).Microseconds()) / 1000.0
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":    "UP",
@@ -691,6 +696,17 @@ func (s *Server) handlePresignedURL(c *gin.Context) {
 		now.Format("2006-01-02"), req.ExamID, req.StudentID, uuid.New().String()[:8])
 
 	// Generate presigned PUT URL (15 minutes)
+	if s.minioClient == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success":            true,
+			"upload_url":         fmt.Sprintf("http://%s/%s/%s", s.cfg.MinIOEndpoint, s.cfg.MinIOBucket, objectKey),
+			"snapshot_key":       objectKey,
+			"expires_in_seconds": 900,
+			"mock":               true,
+		})
+		return
+	}
+
 	presignedURL, err := s.minioClient.PresignedPutObject(
 		c.Request.Context(),
 		s.cfg.MinIOBucket,
@@ -725,6 +741,17 @@ func (s *Server) handleGetSnapshot(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"error":   gin.H{"code": "RESOURCE_NOT_FOUND", "message": "No snapshot for this event"},
+		})
+		return
+	}
+
+	if s.minioClient == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success":            true,
+			"event_id":           eventID,
+			"snapshot_url":       fmt.Sprintf("http://%s/%s/%s", s.cfg.MinIOEndpoint, s.cfg.MinIOBucket, *snapshotKey),
+			"expires_in_seconds": 3600,
+			"mock":               true,
 		})
 		return
 	}
@@ -943,17 +970,12 @@ func (s *Server) handleInvigilatorWS(c *gin.Context) {
 	tokenStr := c.Query("token")
 	examID := c.Query("exam_id")
 
-	if tokenStr == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token query parameter"})
-		return
-	}
-
-	// For development: accept "inv_token" for testing
+	// For development: accept empty token or "inv_token" for instant local testing
 	var userID string
-	if tokenStr == "inv_token" {
+	if tokenStr == "" || tokenStr == "inv_token" {
 		userID = "inv_dev"
 		if examID == "" {
-			examID = "exam_dev"
+			examID = "exam_2026_cs501"
 		}
 	} else {
 		claims, err := auth.ValidateToken(s.cfg.JWTSecret, tokenStr)
