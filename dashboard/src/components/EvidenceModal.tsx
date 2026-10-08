@@ -1,11 +1,20 @@
-import { X, AlertOctagon, ShieldAlert, UserX } from 'lucide-react';
+import React from 'react';
+import { 
+  X, 
+  AlertOctagon, 
+  ShieldAlert, 
+  UserX, 
+  Camera, 
+  Lock,
+  Cpu
+} from 'lucide-react';
 import type { TelemetryEvent, Candidate } from '../types';
 
 interface EvidenceModalProps {
   event: TelemetryEvent | null;
   candidate: Candidate | null;
   onClose: () => void;
-  onAction: (actionType: 'WARN' | 'TERMINATE') => void;
+  onAction: (actionType: 'WARN' | 'LOCK' | 'TERMINATE') => void;
 }
 
 export const EvidenceModal: React.FC<EvidenceModalProps> = ({
@@ -16,111 +25,158 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
 }) => {
   if (!event || !candidate) return null;
 
+  const isCritical = event.severity === 'CRITICAL';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+      <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden text-slate-800 flex flex-col">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/80">
           <div className="flex items-center gap-3">
-            <span className="p-2 rounded-lg bg-rose-100 text-rose-600 border border-rose-200">
+            <span className={`p-2 rounded-xl border ${
+              isCritical 
+                ? 'bg-rose-100 text-rose-600 border-rose-200' 
+                : 'bg-amber-100 text-amber-600 border-amber-200'
+            }`}>
               <AlertOctagon className="w-5 h-5" />
             </span>
             <div>
-              <h3 className="font-bold text-slate-900">Telemetry Infraction Audit</h3>
-              <p className="text-xs font-semibold text-slate-500">Event ID: {event.event_id}</p>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-slate-900">Telemetry Infraction Audit</h3>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                  isCritical ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
+                }`}>
+                  {event.severity}
+                </span>
+              </div>
+              <p className="text-xs font-mono text-slate-500">Event ID: {event.event_id}</p>
             </div>
           </div>
+
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 grid grid-cols-2 gap-6">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left: Snapshot Frame */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Evidentiary Capture
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5 text-blue-500" /> Evidentiary Frame
+              </label>
+              <span className="text-[10px] font-mono text-slate-400">{event.timestamp}</span>
+            </div>
+
             <div className="relative aspect-video rounded-xl border border-slate-200 bg-slate-100 overflow-hidden flex items-center justify-center group shadow-inner">
-              <div className="text-center p-4 z-20">
-                <div className="inline-block p-3 rounded-full bg-white border border-slate-200 text-slate-400 mb-2 shadow-sm">
-                  <UserX className="w-8 h-8 text-rose-500" />
+              {candidate.avatar ? (
+                <img 
+                  src={candidate.avatar} 
+                  alt="Candidate Flagged Frame" 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                <div className="text-center p-4 z-20 flex flex-col items-center">
+                  <div className="p-3 rounded-full bg-white border border-slate-200 text-slate-400 mb-2 shadow-xs">
+                    <UserX className="w-8 h-8 text-rose-500" />
+                  </div>
+                  <p className="text-xs font-bold text-slate-600">Flagged Frame Captured</p>
                 </div>
-                <p className="text-xs font-bold text-slate-500">Flagged Frame Captured</p>
-                <span className="text-[10px] text-slate-400 font-semibold">Timestamp: {event.timestamp}</span>
-              </div>
-              <div className="absolute top-3 left-3 z-20 px-2 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold tracking-wider shadow-sm">
-                {event.severity}
+              )}
+
+              {/* Red watermark flag */}
+              <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-bold tracking-wider shadow-xs">
+                FLAG: {event.subtype}
               </div>
             </div>
-            <p className="text-[11px] text-slate-400 font-medium italic">
-              Encrypted on-device snapshot transmitted over secure WebSocket.
+
+            <p className="text-[11px] text-slate-500 font-medium italic">
+              Encrypted on-device snapshot stored in MinIO S3 evidence bucket.
             </p>
           </div>
 
-          {/* Right: AI Telemetry Breakdown */}
+          {/* Right: AI Breakdown & Actions */}
           <div className="flex flex-col justify-between space-y-4">
             <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Candidate & AI Analytics
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-blue-500" /> AI Diagnostic Breakdown
               </label>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3 text-xs shadow-sm">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2.5 text-xs shadow-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Student:</span>
-                  <span className="font-bold text-slate-900">{candidate.name} <span className="text-slate-400">(#{candidate.student_id})</span></span>
+                  <span className="text-slate-500 font-medium">Candidate:</span>
+                  <span className="font-bold text-slate-900">
+                    {candidate.name} <span className="text-slate-400 font-normal">({candidate.roll_id || `#${candidate.student_id}`})</span>
+                  </span>
                 </div>
+
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Infraction Type:</span>
-                  <span className="font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded">{event.subtype}</span>
+                  <span className="text-slate-500 font-medium">Infraction:</span>
+                  <span className="font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">
+                    {event.subtype.replace(/_/g, ' ')}
+                  </span>
                 </div>
+
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Model Confidence:</span>
-                  <span className="font-bold text-emerald-600">{(event.confidence * 100).toFixed(1)}%</span>
+                  <span className="text-slate-500 font-medium">AI Confidence:</span>
+                  <span className="font-bold text-emerald-600">
+                    {(event.confidence * 100).toFixed(1)}%
+                  </span>
                 </div>
+
                 <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                  <span className="text-slate-500 font-medium">Trust Score After Hit:</span>
-                  <span className={`font-black text-sm ${candidate.trust_score < 60 ? 'text-rose-600' : 'text-amber-600'}`}>
-                    {candidate.trust_score} / 100
+                  <span className="text-slate-500 font-medium">Trust Score:</span>
+                  <span className={`font-black text-sm ${candidate.trust_score < 60 ? 'text-rose-600' : 'text-slate-800'}`}>
+                    {candidate.trust_score}% / 100%
                   </span>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-blue-800 font-medium">
-                <span className="text-blue-500 block text-[10px] font-bold uppercase tracking-wider mb-1">Diagnostic Detail:</span>
+              <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-800 font-medium">
+                <span className="text-blue-600 block text-[10px] font-bold uppercase tracking-wider mb-0.5">Diagnostic Log:</span>
                 {event.message}
               </div>
             </div>
 
             {/* Direct Invigilator Actions */}
-            <div className="space-y-2 pt-3 border-t border-slate-100">
-              <button
-                onClick={() => onAction('WARN')}
-                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-xs transition-colors"
-              >
-                <ShieldAlert className="w-4 h-4" /> Issue Direct Proctor Warning
-              </button>
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => onAction('WARN')}
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-xs transition cursor-pointer"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" /> Warn Student
+                </button>
+
+                <button
+                  onClick={() => onAction('LOCK')}
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs transition cursor-pointer"
+                >
+                  <Lock className="w-3.5 h-3.5" /> Lock Screen
+                </button>
+              </div>
+
               <button
                 onClick={() => onAction('TERMINATE')}
-                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition cursor-pointer shadow-xs"
               >
-                <UserX className="w-4 h-4" /> Force Lock & Terminate Exam
+                <UserX className="w-3.5 h-3.5" /> Force Terminate Exam
               </button>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 flex justify-between items-center text-xs">
-          <span className="text-slate-400 font-semibold">ProctorSentinel Audit Engine v1.0</span>
+        <div className="border-t border-slate-200 bg-slate-50 px-6 py-3 flex justify-between items-center text-xs">
+          <span className="text-slate-400 font-medium">ExamGuard ProctorSentinel Engine</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold transition-colors shadow-sm"
+            className="px-4 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold transition shadow-xs cursor-pointer"
           >
             Dismiss
           </button>

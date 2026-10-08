@@ -33,9 +33,12 @@ export interface TelemetryEvent {
 export interface Candidate {
   student_id: string;
   name: string;
+  roll_id?: string;
+  avatar?: string;
   trust_score: number;
   status: CandidateStatus;
   last_violation?: AnomalySubtype | string;
+  hasDot?: boolean;
   camera_active?: boolean;
   microphone_active?: boolean;
 }
@@ -58,3 +61,20 @@ export interface InitialStatePayload {
   };
   candidates: Candidate[];
 }
+
+export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED' | 'RECONNECTING';
+
+export interface CandidateStatusUpdatePayload {
+  exam_id: string;
+  student_id: string;
+  trust_score: number;
+  status: CandidateStatus;
+  last_violation?: string;
+}
+
+export interface CandidateConnectionChangePayload {
+  exam_id: string;
+  student_id: string;
+  connected: boolean;
+  timestamp: string;
+}

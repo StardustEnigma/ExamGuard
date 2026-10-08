@@ -394,7 +394,7 @@ func (s *Server) handleListCandidates(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	rows, err := s.pool.Query(ctx,
-		`SELECT s.student_id, st.name,
+		`SELECT st.student_id, st.name,
 		        COALESCE(s.trust_score, 100) as trust_score,
 		        COALESCE(s.status, 'ACTIVE') as status,
 		        s.last_violation
