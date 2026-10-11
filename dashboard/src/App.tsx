@@ -1,237 +1,686 @@
-import { useState, useEffect } from 'react';
-import { ShieldAlert, Users, AlertTriangle, Eye, Video, Mic, Bell, RefreshCw } from 'lucide-react';
-import type { Candidate, TelemetryEvent } from './types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { 
+  Search, 
+  Clock, 
+  Radio, 
+  Camera, 
+  Mic, 
+  Monitor, 
+  CheckCircle2, 
+  X, 
+  Zap
+} from 'lucide-react';
+import type { Candidate, TelemetryEvent, ConnectionStatus } from './types';
+import { telemetrySocket } from './services/websocket';
+import { Sidebar } from './components/Sidebar';
+import { LiveVideoFeed } from './components/LiveVideoFeed';
+import { AnomalyFeed } from './components/AnomalyFeed';
 import { EvidenceModal } from './components/EvidenceModal';
 
 const INITIAL_CANDIDATES: Candidate[] = [
-  { student_id: '49', name: 'Atharva Mandle', trust_score: 98, status: 'ACTIVE' },
-  { student_id: '46', name: 'Taher Sanawadwala', trust_score: 82, status: 'ACTIVE', last_violation: 'GAZE_DEVIATION' },
-  { student_id: '50', name: 'Anushka Patel', trust_score: 54, status: 'FLAGGED', last_violation: 'MULTIPLE_FACES_DETECTED' },
-  { student_id: '52', name: 'Dimpal Sharma', trust_score: 92, status: 'ACTIVE' },
-  { student_id: '38', name: 'Aryan Karande', trust_score: 100, status: 'ACTIVE' },
-  { student_id: '12', name: 'Rohan Sharma', trust_score: 42, status: 'FLAGGED', last_violation: 'TAB_SWITCH_BLUR' },
+  {
+    student_id: '46',
+    name: 'Taher Sanawadwala',
+    roll_id: '2024-CS-046',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80',
+    trust_score: 98.4,
+    status: 'ACTIVE',
+    biometric_match: 99.4,
+    seat_number: 'Hall-4B-S14',
+    ip_address: '192.168.1.104',
+    device: 'Win11 • Chrome 128',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: true,
+    hasDot: false,
+  },
+  {
+    student_id: '50',
+    name: 'Anushka Patel',
+    roll_id: '2024-CS-050',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+    trust_score: 86.1,
+    status: 'ACTIVE',
+    biometric_match: 98.8,
+    seat_number: 'Hall-4B-S15',
+    ip_address: '192.168.1.105',
+    device: 'macOS Sonoma • Safari',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: true,
+    hasDot: true,
+  },
+  {
+    student_id: '49',
+    name: 'Atharva Mandle',
+    roll_id: '2024-CS-049',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80',
+    trust_score: 98.4,
+    status: 'ACTIVE',
+    biometric_match: 99.1,
+    seat_number: 'Hall-4B-S16',
+    ip_address: '192.168.1.106',
+    device: 'Ubuntu 24 • Chrome',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: true,
+    hasDot: true,
+  },
+  {
+    student_id: '52',
+    name: 'Dimpal Sharma',
+    roll_id: '2024-CS-052',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80',
+    trust_score: 77.3,
+    status: 'ACTIVE',
+    biometric_match: 97.5,
+    seat_number: 'Hall-4B-S17',
+    ip_address: '192.168.1.107',
+    device: 'Win11 • Edge 128',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: true,
+    hasDot: true,
+  },
+  {
+    student_id: '38',
+    name: 'Aryan Karande',
+    roll_id: '2024-CS-038',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+    trust_score: 87.1,
+    status: 'ACTIVE',
+    biometric_match: 98.2,
+    seat_number: 'Hall-4B-S18',
+    ip_address: '192.168.1.108',
+    device: 'macOS Sequoia • Chrome',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: true,
+    hasDot: true,
+  },
+  {
+    student_id: '12',
+    name: 'Rohan Sharma',
+    roll_id: '2024-CS-012',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80',
+    trust_score: 42.0,
+    status: 'FLAGGED',
+    last_violation: 'TAB_SWITCH_BLUR',
+    biometric_match: 82.0,
+    seat_number: 'Hall-4B-S19',
+    ip_address: '192.168.1.109',
+    device: 'Win10 • Chrome 128',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: false,
+    hasDot: true,
+  },
+  {
+    student_id: '21',
+    name: 'Priya Singh',
+    roll_id: '2024-CS-021',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80',
+    trust_score: 92.4,
+    status: 'ACTIVE',
+    biometric_match: 99.0,
+    seat_number: 'Hall-4B-S20',
+    ip_address: '192.168.1.110',
+    device: 'macOS Sonoma • Safari',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: true,
+    hasDot: true,
+  },
+  {
+    student_id: '33',
+    name: 'Farhan Qureshi',
+    roll_id: '2024-CS-033',
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80',
+    trust_score: 89.0,
+    status: 'ACTIVE',
+    biometric_match: 98.6,
+    seat_number: 'Hall-4B-S21',
+    ip_address: '192.168.1.111',
+    device: 'Ubuntu 24 • Firefox',
+    camera_active: true,
+    microphone_active: true,
+    screen_active: true,
+    hasDot: true,
+  },
 ];
 
 export default function App() {
   const [candidates, setCandidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
   const [events, setEvents] = useState<TelemetryEvent[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(INITIAL_CANDIDATES[0]);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('CONNECTING');
+  const [activeAuditModal, setActiveAuditModal] = useState<{ event: TelemetryEvent; candidate: Candidate } | null>(null);
 
-  const [activeAuditModal, setActiveAuditModal] = useState<{
-    event: TelemetryEvent;
-    candidate: Candidate;
-  } | null>(null);
+  // Enterprise UI States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [fleetFilter, setFleetFilter] = useState<'ALL' | 'FLAGGED' | 'HIGH' | 'WATCH'>('ALL');
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastNoticeSent, setBroadcastNoticeSent] = useState<string | null>(null);
 
+  // Live Exam Countdown Timer (01:42:15 Remaining)
+  const [secondsRemaining, setSecondsRemaining] = useState(6135); // ~1h 42m 15s
   useEffect(() => {
     const timer = setInterval(() => {
-      const randomCandidate = candidates[Math.floor(Math.random() * candidates.length)];
-      const sampleAlerts = [
-        { subtype: 'MULTIPLE_FACES_DETECTED', severity: 'CRITICAL' as const, penalty: 15, msg: 'Additional face observed in frame' },
-        { subtype: 'TAB_SWITCH_BLUR', severity: 'HIGH' as const, penalty: 12, msg: 'Exam window lost focus' },
-        { subtype: 'GAZE_DEVIATION', severity: 'MEDIUM' as const, penalty: 5, msg: 'Off-screen gaze sustained > 3.5s' },
-        { subtype: 'AUDIO_WHISPER', severity: 'LOW' as const, penalty: 3, msg: 'Whispering frequencies registered' },
-      ];
-      const alert = sampleAlerts[Math.floor(Math.random() * sampleAlerts.length)];
-
-      const newEvent: TelemetryEvent = {
-        event_id: `evt_${Math.random().toString(36).substring(2, 9)}`,
-        student_id: randomCandidate.student_id,
-        timestamp: new Date().toLocaleTimeString(),
-        subtype: alert.subtype,
-        severity: alert.severity,
-        confidence: Number((0.85 + Math.random() * 0.14).toFixed(2)),
-        message: alert.msg,
-      };
-
-      setEvents((prev) => [newEvent, ...prev.slice(0, 19)]);
-
-      setCandidates((prev) =>
-        prev.map((c) => {
-          if (c.student_id === randomCandidate.student_id) {
-            const nextScore = Math.max(0, c.trust_score - alert.penalty);
-            const updated: Candidate = {
-              ...c,
-              trust_score: nextScore,
-              status: nextScore < 60 ? ('FLAGGED' as const) : c.status,
-              last_violation: alert.subtype,
-            };
-            setSelectedCandidate((curr: Candidate | null) => (curr?.student_id === c.student_id ? updated : curr));
-            return updated;
-          }
-          return c;
-        })
-      );
-    }, 4500);
-
+      setSecondsRemaining((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
     return () => clearInterval(timer);
-  }, [candidates]);
+  }, []);
 
-  const activeCount = candidates.filter((c) => c.status === 'ACTIVE').length;
-  const flaggedCount = candidates.filter((c) => c.status === 'FLAGGED').length;
+  const formatCountdown = (totalSec: number) => {
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
+
+  // Incoming WebSocket Event Handler
+  const handleIncomingEvent = useCallback((newEvent: TelemetryEvent) => {
+    setEvents((prev) => [newEvent, ...prev.slice(0, 39)]);
+
+    setCandidates((prev) =>
+      prev.map((c) => {
+        if (c.student_id === newEvent.student_id) {
+          const penalty = newEvent.penalty || (newEvent.severity === 'CRITICAL' ? 15 : 10);
+          const nextScore = Math.max(0, Number((c.trust_score - penalty).toFixed(1)));
+          const updated: Candidate = {
+            ...c,
+            trust_score: nextScore,
+            status: nextScore < 60 ? 'FLAGGED' : c.status,
+            last_violation: newEvent.subtype,
+          };
+          setSelectedCandidate((curr) => (curr?.student_id === c.student_id ? updated : curr));
+          return updated;
+        }
+        return c;
+      })
+    );
+  }, []);
+
+  // Connect to Go Edge Server via WebSocket
+  useEffect(() => {
+    telemetrySocket.connect();
+
+    const unsubStatus = telemetrySocket.onStatusChange((status) => {
+      setConnectionStatus(status);
+    });
+
+    const unsubEvents = telemetrySocket.subscribe(handleIncomingEvent);
+
+    return () => {
+      unsubStatus();
+      unsubEvents();
+      telemetrySocket.disconnect();
+    };
+  }, [handleIncomingEvent]);
+
+  // Invigilator Action Handler
+  const handleProctorAction = (actionType: 'WARN' | 'LOCK' | 'TERMINATE', studentId: string) => {
+    telemetrySocket.sendAction(actionType, studentId);
+  };
+
+  // Filtered & Searched Candidate List
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter((c) => {
+      const matchesSearch = 
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.roll_id || '').toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+
+      if (fleetFilter === 'FLAGGED') return c.status === 'FLAGGED' || c.trust_score < 60;
+      if (fleetFilter === 'HIGH') return c.trust_score >= 90;
+      if (fleetFilter === 'WATCH') return c.trust_score < 90 && c.trust_score >= 60;
+      return true;
+    });
+  }, [candidates, searchQuery, fleetFilter]);
+
+  const flaggedCount = candidates.filter((c) => c.status === 'FLAGGED' || c.trust_score < 60).length;
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col font-sans">
-      <header className="border-b border-slate-800 bg-[#111827] px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <ShieldAlert className="h-6 w-6 text-blue-500" />
-          <h1 className="font-bold text-lg tracking-wide">
-            ExamGuard <span className="text-xs font-normal px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">INVIGILATOR CONSOLE</span>
-          </h1>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-            <Users className="w-4 h-4 text-emerald-400" />
-            <span>Active: <strong>{activeCount}</strong></span>
-          </div>
-          <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
-            <span>Flagged: <strong>{flaggedCount}</strong></span>
-          </div>
-        </div>
-      </header>
+    <div className="flex h-screen w-screen overflow-hidden bg-[#F8FAFC] font-sans antialiased text-slate-800">
+      {/* 1. Left Sidebar Component (Proctortrack / ExamSoft Style) */}
+      <Sidebar
+        connectionStatus={connectionStatus}
+        onlineCount={28}
+        flaggedCount={flaggedCount}
+        onAuditClick={() => {
+          const flaggedCandidate = candidates.find((c) => c.status === 'FLAGGED') || candidates[0];
+          setActiveAuditModal({
+            event: events[0] || {
+              event_id: 'evt_audit_latest',
+              student_id: flaggedCandidate.student_id,
+              timestamp: '15:04:12',
+              subtype: flaggedCandidate.last_violation || 'MULTIPLE_FACES_DETECTED',
+              severity: 'CRITICAL',
+              confidence: 0.99,
+              message: 'Infraction audit snapshot captured by proctoring engine.',
+            },
+            candidate: flaggedCandidate,
+          });
+        }}
+        onBroadcastClick={() => setIsBroadcastModalOpen(true)}
+      />
 
-      <div className="flex-1 grid grid-cols-12 gap-6 p-6">
-        <div className="col-span-8 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold tracking-wider text-slate-400 uppercase">Live Session Candidates</h2>
-            <span className="text-xs text-slate-500 flex items-center gap-1">
-              <RefreshCw className="w-3 h-3 animate-spin text-blue-400" /> Synced via Go Engine
+      {/* 2. Main Workstation Area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top Institutional Command Bar */}
+        <header className="h-16 bg-white border-b border-slate-200/90 px-6 flex items-center justify-between shrink-0 shadow-2xs">
+          {/* Exam Title & Active Status */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-700" />
+              <h1 className="font-extrabold text-sm text-slate-900 tracking-tight">
+                CS501 Distributed Systems End-Semester
+              </h1>
+            </div>
+
+            <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 hidden md:inline">
+              Hall 4B • Section A
             </span>
-          </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            {candidates.map((c) => {
-              const isDanger = c.trust_score < 60;
-              const isWarning = c.trust_score >= 60 && c.trust_score < 85;
-              const ringColor = isDanger ? 'border-rose-500' : isWarning ? 'border-amber-500' : 'border-emerald-500';
-              const badgeColor = isDanger ? 'bg-rose-500/20 text-rose-400' : isWarning ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400';
-
-              return (
-                <div
-                  key={c.student_id}
-                  onClick={() => setSelectedCandidate(c)}
-                  className={`cursor-pointer rounded-xl bg-[#111827] border p-4 transition-all hover:border-slate-500 ${
-                    selectedCandidate?.student_id === c.student_id ? 'ring-2 ring-blue-500' : 'border-slate-800'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-semibold text-slate-200">Roll #{c.student_id}</h3>
-                      <p className="text-xs text-slate-400">{c.name}</p>
-                    </div>
-                    <span className={`text-xs px-2 py-0.5 rounded font-mono font-bold ${badgeColor}`}>
-                      {c.trust_score}%
-                    </span>
-                  </div>
-
-                  <div className={`mt-3 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border ${ringColor}`}>
-                    <div
-                      className={`h-full transition-all duration-500 ${isDanger ? 'bg-rose-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      style={{ width: `${c.trust_score}%` }}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-slate-400 mt-3 pt-2 border-t border-slate-800/80">
-                    <span className="truncate max-w-[120px]">{c.last_violation ?? 'Nominal'}</span>
-                    <div className="flex items-center gap-1.5">
-                      <Video className="w-3.5 h-3.5 text-emerald-400" />
-                      <Mic className="w-3.5 h-3.5 text-emerald-400" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="col-span-4 flex flex-col gap-6">
-          <div className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex flex-col h-72">
-            <div className="flex items-center gap-2 mb-3 text-slate-300">
-              <Bell className="w-4 h-4 text-blue-400" />
-              <h2 className="text-sm font-semibold tracking-wide">Live Incident Feed</h2>
+            {/* Countdown Timer Clock */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-mono text-xs font-bold shadow-2xs">
+              <Clock className="w-3.5 h-3.5 text-slate-600" />
+              <span>{formatCountdown(secondsRemaining)} REMAINING</span>
             </div>
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
-              {events.length === 0 ? (
-                <p className="text-slate-500">Listening for telemetry anomalies...</p>
-              ) : (
-                events.map((e) => (
+          </div>
+
+          {/* Right Controls: Simulator Drawer Trigger + Proctor Avatar */}
+          <div className="flex items-center gap-3">
+            {/* Discreet Edge Telemetry Lab Trigger */}
+            <button
+              onClick={() => setIsSimulatorOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer hover:border-slate-300"
+              title="Open Edge Telemetry Lab to simulate and test real-time violations"
+            >
+              <Zap className="w-3.5 h-3.5 text-slate-700" />
+              <span className="hidden sm:inline">Telemetry Lab</span>
+              <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-mono">
+                SIM
+              </span>
+            </button>
+
+            {/* Broadcast Notice Button */}
+            <button
+              onClick={() => setIsBroadcastModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer hover:border-slate-300"
+            >
+              <Radio className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Broadcast</span>
+            </button>
+
+            {/* Proctor Profile Badge */}
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+              <div className="text-right hidden xl:block">
+                <p className="text-xs font-bold text-slate-800 leading-tight">Prof. Saurabh Tiwari</p>
+                <p className="text-[10px] text-slate-500 font-medium">Chief Invigilator</p>
+              </div>
+
+              <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shadow-2xs">
+                <img
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+                  alt="Proctor Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Workspace Body: 2 Columns (Fleet Directory on Left, Dual Video & Forensic Feed on Right) */}
+        <main className="flex-1 p-5 overflow-y-auto grid grid-cols-12 gap-5 min-h-0">
+          {/* Center Column: Fleet Monitoring Grid */}
+          <section className="col-span-12 lg:col-span-7 xl:col-span-7 flex flex-col space-y-3">
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-white p-2.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+              {/* Search Candidate Input */}
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search candidate name, roll ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
+                />
+              </div>
+
+              {/* Status Filter Tabs */}
+              <div className="flex items-center gap-1">
+                {[
+                  { id: 'ALL', label: `All (${candidates.length})` },
+                  { id: 'FLAGGED', label: `Flagged (${flaggedCount})` },
+                  { id: 'HIGH', label: 'Verified' },
+                  { id: 'WATCH', label: 'Watchlist' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setFleetFilter(tab.id as any)}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      fleetFilter === tab.id
+                        ? 'bg-slate-900 text-white shadow-2xs'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Candidate Directory Grid (2 Columns) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {filteredCandidates.map((c) => {
+                const isDanger = c.status === 'FLAGGED' || c.trust_score < 60;
+                const isSelected = selectedCandidate?.student_id === c.student_id;
+                const progressBarColor = 'bg-slate-800';
+
+                return (
                   <div
-                    key={e.event_id}
-                    onClick={() => {
-                      const candidate = candidates.find((c) => c.student_id === e.student_id);
-                      if (candidate) {
-                        setActiveAuditModal({ event: e, candidate });
-                      }
-                    }}
-                    className="p-2.5 rounded bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 flex justify-between items-start cursor-pointer transition"
+                    key={c.student_id}
+                    onClick={() => setSelectedCandidate(c)}
+                    className={`bg-white rounded-2xl border p-3.5 shadow-2xs transition-all duration-150 cursor-pointer hover:shadow-sm space-y-2.5 relative ${
+                      isSelected
+                        ? 'border-slate-900 ring-2 ring-slate-900/10'
+                        : isDanger
+                        ? 'border-slate-300 bg-slate-50/50'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-200">#{e.student_id}</span>
-                        <span className="font-mono text-[10px] text-slate-400">{e.timestamp}</span>
+                    {/* Top Row: Candidate Name, Roll ID, Peripheral Badges */}
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 pr-2">
+                        <p className="text-xs font-bold text-slate-900 truncate">
+                          {c.name}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          {c.roll_id || 'BTech-CS-046'}
+                        </p>
                       </div>
-                      <p className="text-slate-300 mt-0.5">{e.message}</p>
-                    </div>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${e.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                      {e.subtype}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
 
-          <div className="bg-[#111827] border border-slate-800 rounded-xl p-4 flex-1">
-            <h2 className="text-sm font-semibold tracking-wide text-slate-300 mb-3 flex items-center gap-2">
-              <Eye className="w-4 h-4 text-blue-400" /> Selected Candidate Inspector
-            </h2>
-            {selectedCandidate ? (
-              <div className="space-y-4 text-xs">
-                <div>
-                  <p className="text-slate-400">Candidate Name</p>
-                  <p className="text-sm font-bold text-slate-200">{selectedCandidate.name} (Roll #{selectedCandidate.student_id})</p>
-                </div>
-                <div>
-                  <p className="text-slate-400">Trust Index</p>
-                  <p className="text-xl font-bold text-blue-400 font-mono">{selectedCandidate.trust_score} / 100</p>
-                </div>
-                <div className="p-3 bg-slate-900 rounded border border-slate-800">
-                  <p className="text-slate-400">Last Anomaly Flag</p>
-                  <p className="font-mono text-rose-400 mt-1">{selectedCandidate.last_violation ?? 'None recorded'}</p>
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={() => alert(`Warning dispatched to Roll #${selectedCandidate.student_id}`)}
-                    className="flex-1 py-1.5 px-3 bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/40 rounded transition"
-                  >
-                    Warn Student
-                  </button>
-                  <button
-                    onClick={() => alert(`Session locked for Roll #${selectedCandidate.student_id}`)}
-                    className="flex-1 py-1.5 px-3 bg-rose-600/30 hover:bg-rose-600/50 text-rose-300 border border-rose-500/40 rounded transition"
-                  >
-                    Lock Session
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-500 pb-8">
-                Click any candidate card to view telemetry metrics
-              </div>
-            )}
-          </div>
-        </div>
+                      {/* Hardware Status Badges */}
+                      <div className="flex items-center gap-1 text-slate-400">
+                        <span title="Webcam Live"><Camera className="w-3 h-3 text-slate-500" /></span>
+                        <span title="Microphone Active"><Mic className="w-3 h-3 text-slate-500" /></span>
+                        <span title="Screen Shared"><Monitor className="w-3 h-3 text-slate-500" /></span>
+                      </div>
+                    </div>
+
+                    {/* Centered Student Photo & Biometric ID Match Tag */}
+                    <div className="flex items-center gap-3 py-1">
+                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 relative">
+                        <img
+                          src={c.avatar}
+                          alt={c.name}
+                          className="w-full h-full object-cover"
+                        />
+                        {c.hasDot && (
+                          <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-slate-700 ring-2 ring-white" />
+                        )}
+                      </div>
+
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono">
+                          <span>Seat:</span>
+                          <span className="font-bold text-slate-700">{c.seat_number || 'Hall-4B'}</span>
+                        </div>
+
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-700 border border-slate-200">
+                          <CheckCircle2 className="w-2.5 h-2.5 text-slate-500" />
+                          <span>ID: {c.biometric_match || 99.4}% Match</span>
+                        </span>
+
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {c.device || 'Chrome • Windows'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Trust Score & Progress Bar */}
+                    <div className="space-y-1 pt-1 border-t border-slate-100">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-[11px] font-bold text-slate-600">Integrity Trust</span>
+                        <span className="font-bold text-slate-900 font-mono">
+                          {c.trust_score}%
+                        </span>
+                      </div>
+
+                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${progressBarColor} rounded-full transition-all duration-300`}
+                          style={{ width: `${Math.min(100, Math.max(0, c.trust_score))}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Right Column: Focus Stream Monitor & Live Forensic Feed */}
+          <aside className="col-span-12 lg:col-span-5 xl:col-span-5 flex flex-col space-y-4">
+            {/* 1. Live Video Feed HUD Component */}
+            <LiveVideoFeed
+              candidate={selectedCandidate}
+              onWarn={(studentId) => handleProctorAction('WARN', studentId)}
+              onLock={(studentId) => handleProctorAction('LOCK', studentId)}
+              onTerminate={(studentId) => handleProctorAction('TERMINATE', studentId)}
+              onIntercom={(studentId) => {
+                alert(`Opening two-way live intercom channel with candidate ${studentId}`);
+              }}
+            />
+
+            {/* 2. Live Incident Forensic Feed Component */}
+            <AnomalyFeed
+              events={events}
+              candidates={candidates}
+              onSelectEvent={(event, candidate) => {
+                setSelectedCandidate(candidate);
+                setActiveAuditModal({ event, candidate });
+              }}
+            />
+          </aside>
+        </main>
       </div>
 
+      {/* 3. Evidentiary Forensic Capture & Audit Modal */}
       <EvidenceModal
         event={activeAuditModal?.event ?? null}
         candidate={activeAuditModal?.candidate ?? null}
         onClose={() => setActiveAuditModal(null)}
         onAction={(action) => {
-          alert(`Invigilator action [${action}] sent to Roll #${activeAuditModal?.candidate.student_id}`);
+          if (activeAuditModal?.candidate) {
+            handleProctorAction(action, activeAuditModal.candidate.student_id);
+          }
           setActiveAuditModal(null);
         }}
       />
+
+      {/* 4. Slide-Out Edge Telemetry Simulator Drawer (Enterprise Testing Deck) */}
+      {isSimulatorOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-2xs transition-all">
+          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between border-l border-slate-200 animate-in slide-in-from-right duration-200">
+            <div className="p-5 space-y-4 overflow-y-auto">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-800">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900">Edge Telemetry Simulator</h3>
+                    <p className="text-xs text-slate-500">Inject real-time anomalies for testing</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsSimulatorOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Select Violation Scenario
+                </p>
+
+                {[
+                  {
+                    title: 'Secondary Face in Viewport',
+                    category: 'VISION',
+                    subtype: 'MULTIPLE_FACES_DETECTED',
+                    severity: 'CRITICAL',
+                    confidence: 0.99,
+                    message: 'Secondary face detected in camera viewport at (x: 0.72, y: 0.45).',
+                    penalty: 14.5,
+                    studentId: '50',
+                    studentName: 'Anushka Patel',
+                  },
+                  {
+                    title: 'Unauthorized Tab Switch (ChatGPT)',
+                    category: 'ENVIRONMENT',
+                    subtype: 'TAB_SWITCH_BLUR',
+                    severity: 'HIGH',
+                    confidence: 1.0,
+                    message: 'Persistent Screen Blur: Candidate switched browser tab.',
+                    penalty: 12.0,
+                    studentId: '12',
+                    studentName: 'Rohan Sharma',
+                  },
+                  {
+                    title: 'Gaze Deviation Outside Cones',
+                    category: 'VISION',
+                    subtype: 'GAZE_DEVIATION',
+                    severity: 'MEDIUM',
+                    confidence: 0.95,
+                    message: 'Gaze deviation outside frame detected for 3.8s.',
+                    penalty: 7.5,
+                    studentId: '46',
+                    studentName: 'Taher Sanawadwala',
+                  },
+                  {
+                    title: 'Consistent Acoustic Whisper',
+                    category: 'AUDIO',
+                    subtype: 'AUDIO_WHISPER',
+                    severity: 'LOW',
+                    confidence: 0.89,
+                    message: 'Consistent whisper detected exceeding nominal audio threshold.',
+                    penalty: 5.0,
+                    studentId: '49',
+                    studentName: 'Atharva Mandle',
+                  },
+                ].map((scenario, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      telemetrySocket.simulateAnomaly(scenario as any);
+                      setIsSimulatorOpen(false);
+                    }}
+                    className="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-left transition-all cursor-pointer space-y-1 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-slate-900">
+                        {scenario.title}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                        scenario.severity === 'CRITICAL' ? 'bg-slate-900 text-white border border-slate-800' :
+                        scenario.severity === 'HIGH' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        scenario.severity === 'MEDIUM' ? 'bg-slate-100 text-slate-700 border-slate-200' :
+                        'bg-slate-50 text-slate-600 border border-slate-200'
+                      }`}>
+                        {scenario.severity}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 line-clamp-1">
+                      Target: {scenario.studentName} (-{scenario.penalty} trust penalty)
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-200 bg-slate-50">
+              <button
+                onClick={() => setIsSimulatorOpen(false)}
+                className="w-full py-2 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors shadow-xs"
+              >
+                Close Simulator
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Emergency Fleet Broadcast Notice Modal */}
+      {isBroadcastModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-2xs p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-slate-700" />
+                <h3 className="font-bold text-sm text-slate-900">Broadcast Announcement</h3>
+              </div>
+              <button
+                onClick={() => setIsBroadcastModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs text-slate-600">
+                Pushes a priority on-screen modal notification to all 28 active exam candidate screens.
+              </p>
+              <textarea
+                rows={3}
+                placeholder="e.g., Attention: 15 minutes remaining. Please ensure your face is well-lit and keep your camera centered."
+                value={broadcastMessage}
+                onChange={(e) => setBroadcastMessage(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-400"
+              />
+            </div>
+
+            {broadcastNoticeSent && (
+              <p className="text-xs font-bold text-slate-800">
+                ✓ {broadcastNoticeSent}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setIsBroadcastModalOpen(false)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (broadcastMessage.trim()) {
+                    setBroadcastNoticeSent('Announcement dispatched to all 28 candidate screens.');
+                    setTimeout(() => {
+                      setIsBroadcastModalOpen(false);
+                      setBroadcastNoticeSent(null);
+                      setBroadcastMessage('');
+                    }, 1200);
+                  }
+                }}
+                className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-white shadow-2xs cursor-pointer"
+              >
+                Broadcast to Fleet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

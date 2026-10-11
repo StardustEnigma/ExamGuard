@@ -43,8 +43,8 @@ func TestLoad_Defaults(t *testing.T) {
 		}
 	}
 
-	if cfg.PostgresPort != 5432 {
-		t.Errorf("default PostgresPort = %d, want 5432", cfg.PostgresPort)
+	if cfg.PostgresPort != 5434 {
+		t.Errorf("default PostgresPort = %d, want 5434", cfg.PostgresPort)
 	}
 
 	if cfg.MinIOUseSSL != false {
@@ -104,8 +104,8 @@ func TestLoad_InvalidPortFallback(t *testing.T) {
 
 	cfg := Load()
 
-	if cfg.PostgresPort != 5432 {
-		t.Errorf("PostgresPort with invalid env = %d, want 5432 (fallback)", cfg.PostgresPort)
+	if cfg.PostgresPort != 5434 {
+		t.Errorf("PostgresPort with invalid env = %d, want 5434 (fallback)", cfg.PostgresPort)
 	}
 }
 

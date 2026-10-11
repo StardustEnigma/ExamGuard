@@ -15,15 +15,17 @@ func NewMinIOClient(ctx context.Context, endpoint, accessKey, secretKey, bucket 
 	var client *minio.Client
 	var err error
 
-	for i := 0; i < 10; i++ {
+	const maxAttempts = 3
+	for i := 0; i < maxAttempts; i++ {
 		client, err = minio.New(endpoint, &minio.Options{
 			Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
 			Secure: useSSL,
 		})
 		if err == nil {
 			// Verify connectivity by checking if bucket exists
-			exists, bucketErr := client.BucketExists(ctx, bucket)
-			if bucketErr == nil {
+			var exists bool
+			exists, err = client.BucketExists(ctx, bucket)
+			if err == nil {
 				if !exists {
 					if mkErr := client.MakeBucket(ctx, bucket, minio.MakeBucketOptions{}); mkErr != nil {
 						return nil, fmt.Errorf("minio: create bucket %q: %w", bucket, mkErr)
@@ -36,9 +38,11 @@ func NewMinIOClient(ctx context.Context, endpoint, accessKey, secretKey, bucket 
 				return client, nil
 			}
 		}
-		log.Printf("[minio] connection attempt %d/10 failed, retrying in 3s...", i+1)
-		time.Sleep(3 * time.Second)
+		log.Printf("[minio] connection attempt %d/%d failed: %v", i+1, maxAttempts, err)
+		if i < maxAttempts-1 {
+			time.Sleep(1 * time.Second)
+		}
 	}
 
-	return nil, fmt.Errorf("minio: failed to connect after 10 attempts: %w", err)
+	return nil, fmt.Errorf("minio: failed to connect after %d attempts: %w", maxAttempts, err)
 }
