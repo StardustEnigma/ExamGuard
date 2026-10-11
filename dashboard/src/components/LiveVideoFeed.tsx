@@ -57,7 +57,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
             onClick={() => setActiveTab('webcam')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'webcam'
-                ? 'bg-white text-indigo-700 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -69,7 +69,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
             onClick={() => setActiveTab('screen')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'screen'
-                ? 'bg-white text-indigo-700 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -81,7 +81,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
             onClick={() => setActiveTab('audio')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'audio'
-                ? 'bg-white text-indigo-700 shadow-2xs'
+                ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/60'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -110,17 +110,17 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
               />
 
               {/* High-tech Viewport Corner Brackets */}
-              <div className="absolute top-2.5 left-2.5 w-4 h-4 border-t-2 border-l-2 border-cyan-400 pointer-events-none drop-shadow-sm" />
-              <div className="absolute top-2.5 right-2.5 w-4 h-4 border-t-2 border-r-2 border-cyan-400 pointer-events-none drop-shadow-sm" />
-              <div className="absolute bottom-2.5 left-2.5 w-4 h-4 border-b-2 border-l-2 border-cyan-400 pointer-events-none drop-shadow-sm" />
-              <div className="absolute bottom-2.5 right-2.5 w-4 h-4 border-b-2 border-r-2 border-cyan-400 pointer-events-none drop-shadow-sm" />
+              <div className="absolute top-2.5 left-2.5 w-4 h-4 border-t border-l border-white/70 pointer-events-none drop-shadow-sm" />
+              <div className="absolute top-2.5 right-2.5 w-4 h-4 border-t border-r border-white/70 pointer-events-none drop-shadow-sm" />
+              <div className="absolute bottom-2.5 left-2.5 w-4 h-4 border-b border-l border-white/70 pointer-events-none drop-shadow-sm" />
+              <div className="absolute bottom-2.5 right-2.5 w-4 h-4 border-b border-r border-white/70 pointer-events-none drop-shadow-sm" />
 
               {/* Biometric Face Tracking Bounding Box */}
-              <div className="absolute top-[20%] left-[34%] w-[32%] h-[54%] border-2 border-cyan-400 rounded-xs shadow-[0_0_15px_rgba(34,211,238,0.45)] pointer-events-none">
-                <div className="absolute -inset-1.5 border border-cyan-400/30 rounded-xs pointer-events-none" />
+              <div className="absolute top-[20%] left-[34%] w-[32%] h-[54%] border border-white/80 rounded-xs pointer-events-none shadow-xs">
+                <div className="absolute -inset-1 border border-white/20 rounded-xs pointer-events-none" />
                 {/* Central Gaze Vector Reticle */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-cyan-300 pointer-events-none" />
-                <span className="absolute -top-4 left-0 text-[9px] font-mono font-bold text-cyan-300 bg-slate-900/90 px-1 rounded">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-white/80 pointer-events-none" />
+                <span className="absolute -top-4 left-0 text-[9px] font-mono font-medium text-slate-200 bg-slate-900/80 px-1 rounded border border-white/10">
                   FACE-ID: 0.99
                 </span>
               </div>
@@ -128,7 +128,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
               {/* Top-Left Stream Telemetry Overlay */}
               <div className="absolute top-3 left-4 text-[10px] font-mono text-white/90 space-y-0.5 pointer-events-none drop-shadow-md">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span className="font-bold">LIVE STREAM</span>
                 </div>
                 <p className="text-white/70 text-[9px]">Gaze: [X: +0.02, Y: -0.01]</p>
@@ -148,10 +148,10 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
               {/* Bottom-Left Live Indicator Pill */}
               <div className="absolute bottom-3 left-3 pointer-events-none">
                 <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/85 backdrop-blur-xs border border-white/20 text-white text-[11px] font-medium shadow-md">
-                  <span className={`w-2 h-2 rounded-full ${isGazeDeviated ? 'bg-rose-500 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
+                  <span className={`w-2 h-2 rounded-full ${isGazeDeviated ? 'bg-amber-400' : 'bg-emerald-400'}`} />
                   <span>
                     Gaze:{' '}
-                    <strong className={isGazeDeviated ? 'text-rose-300 font-bold' : 'text-emerald-300 font-semibold'}>
+                    <strong className={isGazeDeviated ? 'text-amber-300 font-semibold' : 'text-emerald-300 font-semibold'}>
                       {isGazeDeviated ? 'Deviated (3.8s)' : 'Nominal'}
                     </strong>
                   </span>
@@ -162,7 +162,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
 
               {/* Bottom-Right Verified ID Match Tag */}
               <div className="absolute bottom-3 right-3 pointer-events-none">
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-950/80 text-[10px] font-mono text-emerald-300 border border-emerald-500/40">
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/85 text-[10px] font-mono text-emerald-300 border border-emerald-500/30">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                   ID: 99.4% Verified
                 </span>
@@ -175,7 +175,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
             <div className="w-full h-full bg-slate-900 p-4 flex flex-col justify-between text-white font-mono">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
-                  <Monitor className="w-4 h-4 text-indigo-400" />
+                  <Monitor className="w-4 h-4 text-slate-400" />
                   <span className="text-xs font-bold">Candidate Screen Mirror</span>
                 </div>
                 <span className="text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
@@ -186,7 +186,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
               <div className="flex-1 flex flex-col items-center justify-center p-3 text-center space-y-2">
                 <div className="w-full max-w-xs p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-left space-y-1 text-xs">
                   <p className="text-slate-400 text-[11px]">Active Window:</p>
-                  <p className="text-indigo-300 font-bold">ExamPortal - Question 18/40</p>
+                  <p className="text-slate-200 font-bold">ExamPortal - Question 18/40</p>
                   <p className="text-slate-500 text-[10px] pt-1">Browser: Chrome 128 (Single Monitor)</p>
                 </div>
                 <p className="text-[11px] text-slate-400">No secondary display or unauthorized processes detected.</p>
@@ -204,7 +204,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
             <div className="w-full h-full bg-slate-900 p-4 flex flex-col justify-between text-white font-mono">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-teal-400" />
+                  <Volume2 className="w-4 h-4 text-slate-400" />
                   <span className="text-xs font-bold">Acoustic Environmental Analysis</span>
                 </div>
                 <span className="text-[10px] text-emerald-400">Ambience: Quiet ({dbLevel} dB)</span>
@@ -212,12 +212,12 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
 
               <div className="flex-1 flex flex-col items-center justify-center space-y-3">
                 <div className="text-center">
-                  <p className="text-2xl font-bold font-mono text-teal-400 tabular-nums">-{dbLevel} dB</p>
+                  <p className="text-2xl font-bold font-mono text-slate-200 tabular-nums">-{dbLevel} dB</p>
                   <p className="text-[11px] text-slate-400">Nominal Ambient Threshold: &lt; 60 dB</p>
                 </div>
                 <div className="w-3/4 h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-teal-400 to-emerald-400 rounded-full transition-all duration-300"
+                    className="h-full bg-slate-400 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(100, dbLevel * 2)}%` }}
                   />
                 </div>
@@ -231,7 +231,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
         {/* 3. Audio Spectrum Waveform Strip */}
         <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-50/80 rounded-xl border border-slate-200/80">
           <div className="flex items-center gap-2">
-            <Mic className="w-3.5 h-3.5 text-teal-600" />
+            <Mic className="w-3.5 h-3.5 text-slate-600" />
             <span className="text-[11px] font-bold text-slate-700">Audio Spectrum</span>
             <span className="text-[10px] font-mono text-slate-400">(-{dbLevel} dB)</span>
           </div>
@@ -241,7 +241,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
             {waveHeights.map((h, i) => (
               <span
                 key={i}
-                className="relative z-10 w-1 bg-teal-500 rounded-full transition-all duration-200"
+                className="relative z-10 w-1 bg-slate-600 rounded-full transition-all duration-200"
                 style={{ height: `${h}%` }}
               />
             ))}
@@ -262,7 +262,7 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
 
             <div className="text-right space-y-0.5">
               <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                isFlagged ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700'
+                isFlagged ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               }`}>
                 {isFlagged ? 'RISK FLAGGED' : 'LOW RISK (NOMINAL)'}
               </span>
@@ -278,27 +278,27 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
           {/* Intercom Speak */}
           <button
             onClick={() => candidate && onIntercom?.(candidate.student_id)}
-            className="py-2 px-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:border-slate-300"
+            className="py-2 px-1 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:border-slate-400"
             title="Broadcast two-way intercom to student"
           >
-            <Radio className="w-3.5 h-3.5 text-indigo-600" />
+            <Radio className="w-3.5 h-3.5 text-slate-600" />
             <span>Intercom</span>
           </button>
 
           {/* Warn Student */}
           <button
             onClick={() => candidate && onWarn?.(candidate.student_id)}
-            className="py-2 px-1 rounded-xl border border-amber-300 bg-amber-50/70 hover:bg-amber-100/70 text-amber-900 text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+            className="py-2 px-1 rounded-xl border border-amber-300 bg-white hover:bg-amber-50/70 text-amber-800 text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer"
             title="Issue formal academic integrity warning"
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
             <span>Warn</span>
           </button>
 
           {/* Lock Screen */}
           <button
             onClick={() => candidate && onLock?.(candidate.student_id)}
-            className="py-2 px-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-98"
+            className="py-2 px-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-98"
             title="Freeze candidate exam browser"
           >
             <Lock className="w-3.5 h-3.5 text-white" />
@@ -308,10 +308,10 @@ export const LiveVideoFeed: React.FC<LiveVideoFeedProps> = ({
           {/* Terminate Session */}
           <button
             onClick={() => candidate && onTerminate?.(candidate.student_id)}
-            className="py-2 px-1 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-98"
+            className="py-2 px-1 rounded-xl border border-red-200 bg-white hover:bg-red-50 text-red-700 text-[11px] font-bold transition-all shadow-2xs flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-98"
             title="Eject candidate and terminate exam"
           >
-            <Slash className="w-3.5 h-3.5 text-white" />
+            <Slash className="w-3.5 h-3.5 text-red-600" />
             <span>Terminate</span>
           </button>
         </div>

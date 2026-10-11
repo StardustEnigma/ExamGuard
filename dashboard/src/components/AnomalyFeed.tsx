@@ -37,7 +37,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       elapsed: '4s ago',
       confidence: 0.99,
       studentId: '50',
-      tags: [{ label: 'Vision AI', icon: Eye, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' }],
+      tags: [{ label: 'Vision AI', icon: Eye, color: 'bg-slate-100 text-slate-700 border-slate-200' }],
     },
     {
       id: 'default-2',
@@ -52,8 +52,8 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       confidence: 1.0,
       studentId: '12',
       tags: [
-        { label: 'Sandbox', icon: Monitor, color: 'bg-slate-100 text-slate-800 border-slate-200' },
-        { label: 'Browser', icon: Monitor, color: 'bg-sky-50 text-sky-800 border-sky-200' },
+        { label: 'Sandbox', icon: Monitor, color: 'bg-slate-100 text-slate-700 border-slate-200' },
+        { label: 'Browser', icon: Monitor, color: 'bg-slate-100 text-slate-700 border-slate-200' },
       ],
     },
     {
@@ -68,7 +68,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       elapsed: '2m ago',
       confidence: 0.95,
       studentId: '46',
-      tags: [{ label: 'Vision AI', icon: Eye, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' }],
+      tags: [{ label: 'Vision AI', icon: Eye, color: 'bg-slate-100 text-slate-700 border-slate-200' }],
     },
     {
       id: 'default-4',
@@ -82,29 +82,29 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       elapsed: '4m ago',
       confidence: 0.89,
       studentId: '49',
-      tags: [{ label: 'Audio Engine', icon: Volume2, color: 'bg-teal-50 text-teal-800 border-teal-200' }],
+      tags: [{ label: 'Audio Engine', icon: Volume2, color: 'bg-slate-100 text-slate-700 border-slate-200' }],
     },
   ];
 
   const getSeverityBadge = (sev: string) => {
     switch (sev) {
       case 'CRITICAL':
-        return 'bg-rose-100 text-rose-800 border border-rose-200/80';
+        return 'bg-red-50 text-red-700 border border-red-200';
       case 'HIGH':
-        return 'bg-amber-100 text-amber-800 border border-amber-200/80';
+        return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'MEDIUM':
-        return 'bg-indigo-100 text-indigo-800 border border-indigo-200/80';
+        return 'bg-slate-100 text-slate-700 border border-slate-200';
       default:
-        return 'bg-slate-100 text-slate-700 border border-slate-200/80';
+        return 'bg-slate-50 text-slate-600 border border-slate-200';
     }
   };
 
   const getCategoryTags = (cat?: string, subtype?: string) => {
     if (cat === 'VISION' || subtype?.includes('FACE') || subtype?.includes('GAZE')) {
-      return [{ label: 'Vision AI', icon: Eye, color: 'bg-emerald-50 text-emerald-800 border-emerald-200' }];
+      return [{ label: 'Vision AI', icon: Eye, color: 'bg-slate-100 text-slate-700 border-slate-200' }];
     }
     if (cat === 'AUDIO' || subtype?.includes('AUDIO') || subtype?.includes('WHISPER')) {
-      return [{ label: 'Audio Engine', icon: Volume2, color: 'bg-teal-50 text-teal-800 border-teal-200' }];
+      return [{ label: 'Audio Engine', icon: Volume2, color: 'bg-slate-100 text-slate-700 border-slate-200' }];
     }
     return [{ label: 'Sandbox / OS', icon: Monitor, color: 'bg-slate-100 text-slate-700 border-slate-200' }];
   };
@@ -124,7 +124,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
       {/* 1. Header with Filters (Proctortrack Style) */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <AlertCircle className="w-4 h-4 text-indigo-600" />
+          <AlertCircle className="w-4 h-4 text-slate-700" />
           <h3 className="text-sm font-bold text-slate-900 tracking-tight">
             Incident Forensic Stream
           </h3>
@@ -141,7 +141,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
               onClick={() => setFilterCategory(f)}
               className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
                 filterCategory === f
-                  ? 'bg-indigo-600 text-white shadow-2xs'
+                  ? 'bg-slate-900 text-white shadow-2xs'
                   : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
@@ -177,7 +177,7 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
                 };
                 if (candidate) onSelectEvent(eventToPass, candidate);
               }}
-              className="p-2.5 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-slate-50/90 transition-all cursor-pointer space-y-1.5 group shadow-2xs"
+              className="p-2.5 rounded-xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50/80 transition-all cursor-pointer space-y-1.5 group shadow-2xs"
             >
               {/* Row Top: Severity Badge + Student Info + Timestamp */}
               <div className="flex items-center justify-between gap-2">
@@ -221,8 +221,8 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1 text-indigo-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="w-3 h-3 text-indigo-600" />
+                <div className="flex items-center gap-1 text-slate-700 font-bold opacity-0 group-hover:opacity-100 transition-opacity group-hover:text-slate-900">
+                  <Camera className="w-3 h-3 text-slate-700 group-hover:text-slate-900" />
                   <span>Inspect Audit Snapshot</span>
                   <ChevronRight className="w-3 h-3" />
                 </div>

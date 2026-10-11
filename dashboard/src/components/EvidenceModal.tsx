@@ -36,16 +36,16 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
           <div className="flex items-center gap-3">
             <span className={`p-2 rounded-xl border ${
               isCritical 
-                ? 'bg-rose-100 text-rose-600 border-rose-200' 
-                : 'bg-amber-100 text-amber-600 border-amber-200'
+                ? 'bg-red-50 text-red-700 border-red-200' 
+                : 'bg-amber-50 text-amber-700 border-amber-200'
             }`}>
               <AlertOctagon className="w-5 h-5" />
             </span>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-slate-900">Telemetry Infraction Audit</h3>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                  isCritical ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                  isCritical ? 'bg-red-50 text-red-700 border-red-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                 }`}>
                   {event.severity}
                 </span>
@@ -68,7 +68,7 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                <Camera className="w-3.5 h-3.5 text-blue-500" /> Evidentiary Frame
+                <Camera className="w-3.5 h-3.5 text-slate-600" /> Evidentiary Frame
               </label>
               <span className="text-[10px] font-mono text-slate-400">{event.timestamp}</span>
             </div>
@@ -83,14 +83,14 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
               ) : (
                 <div className="text-center p-4 z-20 flex flex-col items-center">
                   <div className="p-3 rounded-full bg-white border border-slate-200 text-slate-400 mb-2 shadow-xs">
-                    <UserX className="w-8 h-8 text-rose-500" />
+                    <UserX className="w-8 h-8 text-red-600" />
                   </div>
                   <p className="text-xs font-bold text-slate-600">Flagged Frame Captured</p>
                 </div>
               )}
 
               {/* Red watermark flag */}
-              <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-bold tracking-wider shadow-xs">
+              <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-slate-900/90 text-white text-[10px] font-mono tracking-wider shadow-xs border border-white/20">
                 FLAG: {event.subtype}
               </div>
             </div>
@@ -104,7 +104,7 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
           <div className="flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-blue-500" /> AI Diagnostic Breakdown
+                <Cpu className="w-3.5 h-3.5 text-slate-600" /> AI Diagnostic Breakdown
               </label>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2.5 text-xs shadow-xs">
@@ -117,28 +117,28 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
 
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">Infraction:</span>
-                  <span className="font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">
+                  <span className="font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                     {event.subtype.replace(/_/g, ' ')}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">AI Confidence:</span>
-                  <span className="font-bold text-emerald-600">
+                  <span className="font-bold text-emerald-700">
                     {(event.confidence * 100).toFixed(1)}%
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center pt-2 border-t border-slate-200">
                   <span className="text-slate-500 font-medium">Trust Score:</span>
-                  <span className={`font-black text-sm ${candidate.trust_score < 60 ? 'text-rose-600' : 'text-slate-800'}`}>
+                  <span className={`font-bold text-sm ${candidate.trust_score < 60 ? 'text-red-700' : 'text-slate-900'}`}>
                     {candidate.trust_score}% / 100%
                   </span>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-800 font-medium">
-                <span className="text-blue-600 block text-[10px] font-bold uppercase tracking-wider mb-0.5">Diagnostic Log:</span>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 font-medium">
+                <span className="text-slate-500 block text-[10px] font-bold uppercase tracking-wider mb-0.5">Diagnostic Log:</span>
                 {event.message}
               </div>
             </div>
@@ -148,22 +148,22 @@ export const EvidenceModal: React.FC<EvidenceModalProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => onAction('WARN')}
-                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-xs transition cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white hover:bg-amber-50/70 text-amber-800 border border-amber-300 font-bold text-xs transition cursor-pointer shadow-xs"
                 >
                   <ShieldAlert className="w-3.5 h-3.5" /> Warn Student
                 </button>
 
                 <button
                   onClick={() => onAction('LOCK')}
-                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs transition cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer shadow-xs"
                 >
-                  <Lock className="w-3.5 h-3.5" /> Lock Screen
+                  <Lock className="w-3.5 h-3.5 text-white" /> Lock Screen
                 </button>
               </div>
 
               <button
                 onClick={() => onAction('TERMINATE')}
-                className="w-full flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition cursor-pointer shadow-xs"
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl bg-white hover:bg-red-50 text-red-700 border border-red-200 font-bold text-xs transition cursor-pointer shadow-xs"
               >
                 <UserX className="w-3.5 h-3.5" /> Force Terminate Exam
               </button>

@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems = [
     { id: 'fleet', label: 'Live Fleet Monitor', icon: Eye, count: onlineCount },
-    { id: 'incidents', label: 'Incident Audit Log', icon: FileText, count: flaggedCount, badgeColor: 'bg-rose-100 text-rose-700' },
+    { id: 'incidents', label: 'Incident Audit Log', icon: FileText, count: flaggedCount, badgeColor: 'bg-red-50 text-red-700 border border-red-200' },
     { id: 'verification', label: 'Biometric Verification', icon: ShieldCheck, sub: 'ExamID 100%' },
     { id: 'rules', label: 'Exam Integrity Rules', icon: Sliders },
   ];
@@ -45,24 +45,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-68 bg-white border-r border-slate-200/90 flex flex-col justify-between shrink-0 select-none shadow-[1px_0_3px_rgba(0,0,0,0.02)]">
       <div className="flex flex-col overflow-y-auto">
         {/* 1. Institutional Brand Header */}
-        <div className="h-16 px-4 bg-slate-900 flex items-center justify-between text-white border-b border-slate-800">
+        <div className="h-16 px-4 bg-white flex items-center justify-between border-b border-slate-200/90">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/90 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20">
+            <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-xs">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-sm tracking-tight text-white">ExamGuard</span>
-                <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.2 bg-indigo-500/30 text-indigo-300 rounded border border-indigo-400/20">
+                <span className="font-extrabold text-sm tracking-tight text-slate-900">ExamGuard</span>
+                <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200">
                   v2.4
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-medium tracking-tight">Enterprise Invigilation</p>
+              <p className="text-[10px] text-slate-500 font-medium tracking-tight">Enterprise Invigilation</p>
             </div>
           </div>
 
-          <div className="flex items-center" title={isConnected ? 'Edge Engine Active' : 'Connecting to Edge'}>
-            <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200 text-[10px] font-medium text-slate-600" title={isConnected ? 'Edge Engine Active' : 'Connecting to Edge'}>
+            <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            <span className="font-mono text-[9px]">{isConnected ? 'LIVE' : 'CONN'}</span>
           </div>
         </div>
 
@@ -70,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-3.5 space-y-3.5 border-b border-slate-100">
           <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 space-y-1.5 shadow-2xs">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/60">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-700 bg-slate-200/70 px-2 py-0.5 rounded-md border border-slate-300/70">
                 Live Proctoring
               </span>
               <span className="text-[11px] font-mono text-slate-500 font-semibold">CS501-FIN</span>
@@ -86,20 +87,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Real-time Telemetry Pills */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="px-2.5 py-2 rounded-xl bg-emerald-50/70 border border-emerald-200/70 text-emerald-900 flex items-center justify-between shadow-2xs">
+            <div className="px-2.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-emerald-600" />
                 <span className="text-[11px] font-bold">Online</span>
               </div>
-              <span className="text-xs font-extrabold text-emerald-700 tabular-nums">{onlineCount}</span>
+              <span className="text-xs font-extrabold text-emerald-800 tabular-nums">{onlineCount}</span>
             </div>
 
-            <div className="px-2.5 py-2 rounded-xl bg-rose-50/70 border border-rose-200/70 text-rose-900 flex items-center justify-between shadow-2xs">
+            <div className="px-2.5 py-2 rounded-xl bg-red-50 text-red-700 border border-red-200 flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
                 <span className="text-[11px] font-bold">Flagged</span>
               </div>
-              <span className="text-xs font-extrabold text-rose-700 tabular-nums">{flaggedCount}</span>
+              <span className="text-xs font-extrabold text-red-800 tabular-nums">{flaggedCount}</span>
             </div>
           </div>
 
@@ -129,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => onNavTabChange?.(item.id)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-xs'
+                    ? 'bg-slate-900 text-white shadow-xs'
                     : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
                 }`}
               >
@@ -149,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </span>
                 )}
                 {item.sub && (
-                  <span className={`text-[10px] font-mono ${isActive ? 'text-indigo-200' : 'text-slate-400'}`}>
+                  <span className={`text-[10px] font-mono ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
                     {item.sub}
                   </span>
                 )}
@@ -163,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
-                <Activity className="w-3 h-3 text-indigo-600" />
+                <Activity className="w-3 h-3 text-slate-700" />
                 Active Security Rules
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -183,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div className="flex justify-between">
                 <span>Disqualification:</span>
-                <span className="font-mono text-rose-600 font-bold">&lt; 40% Trust</span>
+                <span className="font-mono text-red-700 font-bold">&lt; 40% Trust</span>
               </div>
             </div>
           </div>
@@ -194,15 +195,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-3 border-t border-slate-200/80 bg-slate-50/50 space-y-2">
         <button
           onClick={onBroadcastClick}
-          className="w-full py-1.5 px-3 rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:border-slate-300"
+          className="w-full py-2 px-3 rounded-xl border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs hover:border-slate-400"
         >
-          <Radio className="w-3.5 h-3.5 text-indigo-600" />
+          <Radio className="w-3.5 h-3.5 text-slate-600" />
           <span>Broadcast Notice</span>
         </button>
 
         <button
           onClick={onAuditClick}
-          className="w-full py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+          className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
         >
           <Lock className="w-3.5 h-3.5 text-white" />
           <span>Audit Snapshots & Action</span>

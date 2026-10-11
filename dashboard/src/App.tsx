@@ -285,8 +285,8 @@ export default function App() {
             </span>
 
             {/* Countdown Timer Clock */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50/80 border border-indigo-200/60 text-indigo-900 font-mono text-xs font-bold shadow-2xs">
-              <Clock className="w-3.5 h-3.5 text-indigo-600" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 font-mono text-xs font-bold shadow-2xs">
+              <Clock className="w-3.5 h-3.5 text-slate-600" />
               <span>{formatCountdown(secondsRemaining)} REMAINING</span>
             </div>
           </div>
@@ -299,9 +299,9 @@ export default function App() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs cursor-pointer hover:border-slate-300"
               title="Open Edge Telemetry Lab to simulate and test real-time violations"
             >
-              <Zap className="w-3.5 h-3.5 text-indigo-600" />
+              <Zap className="w-3.5 h-3.5 text-slate-700" />
               <span className="hidden sm:inline">Telemetry Lab</span>
-              <span className="px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 text-[10px] font-mono">
+              <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-mono">
                 SIM
               </span>
             </button>
@@ -347,7 +347,7 @@ export default function App() {
                   placeholder="Search candidate name, roll ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                  className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all"
                 />
               </div>
 
@@ -364,7 +364,7 @@ export default function App() {
                     onClick={() => setFleetFilter(tab.id as any)}
                     className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       fleetFilter === tab.id
-                        ? 'bg-indigo-600 text-white shadow-2xs'
+                        ? 'bg-slate-900 text-white shadow-2xs'
                         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }`}
                   >
@@ -381,10 +381,10 @@ export default function App() {
                 const isSelected = selectedCandidate?.student_id === c.student_id;
 
                 const progressBarColor = isDanger
-                  ? 'bg-gradient-to-r from-rose-500 to-red-500'
+                  ? 'bg-red-600'
                   : c.trust_score < 85
-                  ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
-                  : 'bg-gradient-to-r from-emerald-400 to-teal-500';
+                  ? 'bg-amber-500'
+                  : 'bg-emerald-600';
 
                 return (
                   <div
@@ -392,9 +392,9 @@ export default function App() {
                     onClick={() => setSelectedCandidate(c)}
                     className={`bg-white rounded-2xl border p-3.5 shadow-2xs transition-all duration-150 cursor-pointer hover:shadow-sm space-y-2.5 relative ${
                       isSelected
-                        ? 'border-indigo-600 ring-2 ring-indigo-500/15'
+                        ? 'border-slate-900 ring-2 ring-slate-900/10'
                         : isDanger
-                        ? 'border-rose-300 bg-rose-50/20'
+                        ? 'border-red-200 bg-red-50/20'
                         : 'border-slate-200 hover:border-slate-300'
                     }`}
                   >
@@ -411,9 +411,9 @@ export default function App() {
 
                       {/* Hardware Status Badges */}
                       <div className="flex items-center gap-1 text-slate-400">
-                        <span title="Webcam Live"><Camera className="w-3 h-3 text-emerald-500" /></span>
-                        <span title="Microphone Active"><Mic className="w-3 h-3 text-emerald-500" /></span>
-                        <span title="Screen Shared"><Monitor className="w-3 h-3 text-emerald-500" /></span>
+                        <span title="Webcam Live"><Camera className="w-3 h-3 text-emerald-600" /></span>
+                        <span title="Microphone Active"><Mic className="w-3 h-3 text-emerald-600" /></span>
+                        <span title="Screen Shared"><Monitor className="w-3 h-3 text-emerald-600" /></span>
                       </div>
                     </div>
 
@@ -426,7 +426,7 @@ export default function App() {
                           className="w-full h-full object-cover"
                         />
                         {c.hasDot && (
-                          <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white" />
+                          <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
                         )}
                       </div>
 
@@ -436,7 +436,7 @@ export default function App() {
                           <span className="font-bold text-slate-700">{c.seat_number || 'Hall-4B'}</span>
                         </div>
 
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
                           <span>ID: {c.biometric_match || 99.4}% Match</span>
                         </span>
@@ -451,7 +451,7 @@ export default function App() {
                     <div className="space-y-1 pt-1 border-t border-slate-100">
                       <div className="flex justify-between text-xs">
                         <span className="text-[11px] font-bold text-slate-600">Integrity Trust</span>
-                        <span className={`font-extrabold ${isDanger ? 'text-rose-600 font-mono' : 'text-slate-900 font-mono'}`}>
+                        <span className={`font-bold ${isDanger ? 'text-red-700 font-mono' : 'text-slate-900 font-mono'}`}>
                           {c.trust_score}%
                         </span>
                       </div>
@@ -515,7 +515,7 @@ export default function App() {
             <div className="p-5 space-y-4 overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+                  <div className="p-1.5 rounded-lg bg-slate-100 text-slate-800">
                     <Zap className="w-4 h-4" />
                   </div>
                   <div>
@@ -589,17 +589,17 @@ export default function App() {
                       telemetrySocket.simulateAnomaly(scenario as any);
                       setIsSimulatorOpen(false);
                     }}
-                    className="w-full p-3 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 text-left transition-all cursor-pointer space-y-1 group"
+                    className="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-left transition-all cursor-pointer space-y-1 group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-slate-800 group-hover:text-indigo-900">
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-slate-900">
                         {scenario.title}
                       </span>
-                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                        scenario.severity === 'CRITICAL' ? 'bg-rose-100 text-rose-700' :
-                        scenario.severity === 'HIGH' ? 'bg-amber-100 text-amber-700' :
-                        scenario.severity === 'MEDIUM' ? 'bg-indigo-100 text-indigo-700' :
-                        'bg-slate-100 text-slate-700'
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                        scenario.severity === 'CRITICAL' ? 'bg-red-50 text-red-700 border-red-200' :
+                        scenario.severity === 'HIGH' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        scenario.severity === 'MEDIUM' ? 'bg-slate-100 text-slate-700 border-slate-200' :
+                        'bg-slate-50 text-slate-600 border border-slate-200'
                       }`}>
                         {scenario.severity}
                       </span>
@@ -615,7 +615,7 @@ export default function App() {
             <div className="p-4 border-t border-slate-200 bg-slate-50">
               <button
                 onClick={() => setIsSimulatorOpen(false)}
-                className="w-full py-2 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors"
+                className="w-full py-2 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors shadow-xs"
               >
                 Close Simulator
               </button>
@@ -630,7 +630,7 @@ export default function App() {
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-5 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
               <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-indigo-600" />
+                <Radio className="w-4 h-4 text-slate-700" />
                 <h3 className="font-bold text-sm text-slate-900">Broadcast Announcement</h3>
               </div>
               <button
@@ -650,12 +650,12 @@ export default function App() {
                 placeholder="e.g., Attention: 15 minutes remaining. Please ensure your face is well-lit and keep your camera centered."
                 value={broadcastMessage}
                 onChange={(e) => setBroadcastMessage(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-indigo-500"
+                className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:border-slate-400"
               />
             </div>
 
             {broadcastNoticeSent && (
-              <p className="text-xs font-bold text-emerald-600">
+              <p className="text-xs font-bold text-emerald-700">
                 ✓ {broadcastNoticeSent}
               </p>
             )}
@@ -678,7 +678,7 @@ export default function App() {
                     }, 1200);
                   }
                 }}
-                className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-2xs"
+                className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-white shadow-2xs cursor-pointer"
               >
                 Broadcast to Fleet
               </button>
