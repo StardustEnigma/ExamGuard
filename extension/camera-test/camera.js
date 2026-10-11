@@ -8,11 +8,20 @@ let headPoseAnomalyStartTime = null;
 
 const HEAD_POSE_DURATION = 3000; // 3 seconds
 
+let headPoseAnomalyReported = false;
+
 let gazeDeviationStartTime = null;
 
 const GAZE_DEVIATION_DURATION = 3500; // 3.5 seconds
 
 let gazeDeviationReported = false;
+
+let faceNotDetectedStartTime = null;
+let faceNotDetectedReported = false;
+
+let multipleFacesReported = false;
+
+const FACE_NOT_DETECTED_DURATION = 5000; // 5 seconds
 
 async function startCamera() {
     try {
@@ -66,109 +75,174 @@ async function startCamera() {
 }
 }
 
+
 function detectFaces() {
     const result = ExamGuardVision.detectFaces(video);
+    const faceCount = result.faceCount;
+    const now = performance.now();
 
-    const headPoseResult = ExamGuardHeadPose.estimateHeadPose(video);
+    // 1. FACE NOT DETECTED
+    if (faceCount === 0) {
+        status.textContent = "FACE_NOT_DETECTED";
 
-    console.log("Head pose result:", headPoseResult);
+        if (faceNotDetectedStartTime === null) {
+            faceNotDetectedStartTime = now;
+        }
 
-    if (headPoseResult?.landmarks) {
-        console.log("Face landmarks:", headPoseResult.landmarks);
+        const duration = now - faceNotDetectedStartTime;
+
+        if (
+            duration >= FACE_NOT_DETECTED_DURATION &&
+            !faceNotDetectedReported
+        ) {
+            const event = {
+                type: "VISION_ANOMALY",
+                subtype: "FACE_NOT_DETECTED",
+                durationSeconds: duration / 1000,
+                metrics: {
+                    faceCount: 0
+                }
+            };
+
+            console.log("FACE EVENT:", event);
+            faceNotDetectedReported = true;
+        }
+    } else {
+        faceNotDetectedStartTime = null;
+        faceNotDetectedReported = false;
     }
 
-    if (headPoseResult?.landmarks) {
-        const landmarks = headPoseResult.landmarks;
+    // 2. MULTIPLE FACES DETECTED
+    if (faceCount > 1) {
+        status.textContent = "MULTIPLE_FACES_DETECTED";
 
-        console.log("Left iris:", {
-            468: landmarks[468],
-            469: landmarks[469],
-            470: landmarks[470],
-            471: landmarks[471],
-            472: landmarks[472]
-        });
+        if (!multipleFacesReported) {
+            const event = {
+                type: "VISION_ANOMALY",
+                subtype: "MULTIPLE_FACES_DETECTED",
+                metrics: {
+                    faceCount: faceCount
+                }
+            };
 
-        console.log("Right iris:", {
-            473: landmarks[473],
-            474: landmarks[474],
-            475: landmarks[475],
-            476: landmarks[476],
-            477: landmarks[477]
-        });
+            console.log("FACE EVENT:", event);
+            multipleFacesReported = true;
+        }
+    } else {
+        multipleFacesReported = false;
 
-        const gaze = ExamGuardHeadPose.estimateGaze(landmarks);
+        if (faceCount === 1) {
+            status.textContent = "NORMAL";
+        }
+    }
 
-        console.log("Gaze result:", gaze);
+    // Only analyze gaze and head pose when exactly one face is visible.
+    if (faceCount === 1) {
+        const headPoseResult =
+            ExamGuardHeadPose.estimateHeadPose(video);
 
-        if (gaze.direction === "CENTER") {
+        // 3. GAZE DEVIATION
+        if (headPoseResult?.landmarks) {
+            const gaze = ExamGuardHeadPose.estimateGaze(
+                headPoseResult.landmarks
+            );
+
+            if (gaze && gaze.direction === "CENTER") {
+                gazeDeviationStartTime = null;
+                gazeDeviationReported = false;
+            } else if (gaze) {
+                if (gazeDeviationStartTime === null) {
+                    gazeDeviationStartTime = now;
+                }
+
+                const duration =
+                    now - gazeDeviationStartTime;
+
+                if (
+                    duration >= GAZE_DEVIATION_DURATION &&
+                    !gazeDeviationReported
+                ) {
+                    const event = {
+                        type: "VISION_ANOMALY",
+                        subtype: "GAZE_DEVIATION",
+                        durationSeconds: duration / 1000,
+                        metrics: {
+                            direction: gaze.direction,
+                            gazeX: gaze.gazeX
+                        }
+                    };
+
+                    console.log("GAZE EVENT:", event);
+                    gazeDeviationReported = true;
+                }
+            }
+        } else {
             gazeDeviationStartTime = null;
             gazeDeviationReported = false;
         }
-        else {
-            if (gazeDeviationStartTime === null) {
-                gazeDeviationStartTime = performance.now();
-            }
 
-            const duration =
-                performance.now() - gazeDeviationStartTime;
+        // 4. HEAD POSE ANOMALY
+        if (headPoseResult) {
+            const anomaly =
+                ExamGuardHeadPose.isHeadPoseAnomaly(
+                    headPoseResult
+                );
 
-            if (duration >= GAZE_DEVIATION_DURATION && !gazeDeviationReported) {
-                const gazeEvent = {
-                    type: "VISION_ANOMALY",
-                    subtype: "GAZE_DEVIATION",
-                    direction: gaze.direction,
-                    durationSeconds: duration / 1000
-                };
+            if (anomaly) {
+                if (headPoseAnomalyStartTime === null) {
+                    headPoseAnomalyStartTime = now;
+                }
 
-                console.log("GAZE EVENT:", gazeEvent);
+                const duration =
+                    now - headPoseAnomalyStartTime;
 
-                gazeDeviationReported = true;
-            }
-        }
-    }
+                if (duration >= HEAD_POSE_DURATION) {
+                    headPoseStatus.textContent =
+                        "HEAD_POSE_ANOMALY";
 
-    if (headPoseResult) {
-    const anomaly = ExamGuardHeadPose.isHeadPoseAnomaly(headPoseResult);
+                    if (!headPoseAnomalyReported) {
+                        const event = {
+                            type: "VISION_ANOMALY",
+                            subtype: "HEAD_POSE_ANOMALY",
+                            durationSeconds: duration / 1000,
+                            metrics: {
+                                pitch: headPoseResult.pitch,
+                                yaw: headPoseResult.yaw,
+                                roll: headPoseResult.roll
+                            }
+                        };
 
-    if (anomaly) {
-        if (headPoseAnomalyStartTime === null) {
-            headPoseAnomalyStartTime = performance.now();
-        }
-
-        const duration =
-            performance.now() - headPoseAnomalyStartTime;
-
-        if (duration >= HEAD_POSE_DURATION) {
-                headPoseStatus.textContent = "HEAD_POSE_ANOMALY";
+                        console.log("HEAD POSE EVENT:", event);
+                        headPoseAnomalyReported = true;
+                    }
+                } else {
+                    headPoseStatus.textContent =
+                        "HEAD_POSE_WARNING";
+                }
             } else {
-                headPoseStatus.textContent = "HEAD_POSE_WARNING";
+                headPoseAnomalyStartTime = null;
+                headPoseAnomalyReported = false;
+                headPoseStatus.textContent =
+                    "HEAD_POSE_NORMAL";
             }
         } else {
             headPoseAnomalyStartTime = null;
-            headPoseStatus.textContent = "HEAD_POSE_NORMAL";
+            headPoseAnomalyReported = false;
+            headPoseStatus.textContent =
+                "HEAD_POSE_UNKNOWN";
         }
-    }
+    } else {
+        // Reset pose and gaze timers when there isn't exactly one face.
+        gazeDeviationStartTime = null;
+        gazeDeviationReported = false;
 
-    if (headPoseResult?.transformationMatrix) {
-        console.log(
-            "Transformation matrix:",
-            headPoseResult.transformationMatrix
-        );
-    }
-
-    console.log("Face detection result:", result);
-
-    if (result.faceCount === 0) {
-        status.textContent = "FACE_NOT_DETECTED";
-    } 
-    else if (result.faceCount === 1) {
-        status.textContent = "NORMAL";
-    } 
-    else {
-        status.textContent = "MULTIPLE_FACES_DETECTED";
+        headPoseAnomalyStartTime = null;
+        headPoseAnomalyReported = false;
+        headPoseStatus.textContent = "HEAD_POSE_UNKNOWN";
     }
 
     requestAnimationFrame(detectFaces);
 }
+
 
 startCamera();
