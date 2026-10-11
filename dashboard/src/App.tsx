@@ -274,7 +274,7 @@ export default function App() {
           {/* Exam Title & Active Status */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-700" />
               <h1 className="font-extrabold text-sm text-slate-900 tracking-tight">
                 CS501 Distributed Systems End-Semester
               </h1>
@@ -379,12 +379,7 @@ export default function App() {
               {filteredCandidates.map((c) => {
                 const isDanger = c.status === 'FLAGGED' || c.trust_score < 60;
                 const isSelected = selectedCandidate?.student_id === c.student_id;
-
-                const progressBarColor = isDanger
-                  ? 'bg-red-600'
-                  : c.trust_score < 85
-                  ? 'bg-amber-500'
-                  : 'bg-emerald-600';
+                const progressBarColor = 'bg-slate-800';
 
                 return (
                   <div
@@ -394,7 +389,7 @@ export default function App() {
                       isSelected
                         ? 'border-slate-900 ring-2 ring-slate-900/10'
                         : isDanger
-                        ? 'border-red-200 bg-red-50/20'
+                        ? 'border-slate-300 bg-slate-50/50'
                         : 'border-slate-200 hover:border-slate-300'
                     }`}
                   >
@@ -411,9 +406,9 @@ export default function App() {
 
                       {/* Hardware Status Badges */}
                       <div className="flex items-center gap-1 text-slate-400">
-                        <span title="Webcam Live"><Camera className="w-3 h-3 text-emerald-600" /></span>
-                        <span title="Microphone Active"><Mic className="w-3 h-3 text-emerald-600" /></span>
-                        <span title="Screen Shared"><Monitor className="w-3 h-3 text-emerald-600" /></span>
+                        <span title="Webcam Live"><Camera className="w-3 h-3 text-slate-500" /></span>
+                        <span title="Microphone Active"><Mic className="w-3 h-3 text-slate-500" /></span>
+                        <span title="Screen Shared"><Monitor className="w-3 h-3 text-slate-500" /></span>
                       </div>
                     </div>
 
@@ -426,7 +421,7 @@ export default function App() {
                           className="w-full h-full object-cover"
                         />
                         {c.hasDot && (
-                          <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                          <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-slate-700 ring-2 ring-white" />
                         )}
                       </div>
 
@@ -436,8 +431,8 @@ export default function App() {
                           <span className="font-bold text-slate-700">{c.seat_number || 'Hall-4B'}</span>
                         </div>
 
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-700 border border-slate-200">
+                          <CheckCircle2 className="w-2.5 h-2.5 text-slate-500" />
                           <span>ID: {c.biometric_match || 99.4}% Match</span>
                         </span>
 
@@ -451,7 +446,7 @@ export default function App() {
                     <div className="space-y-1 pt-1 border-t border-slate-100">
                       <div className="flex justify-between text-xs">
                         <span className="text-[11px] font-bold text-slate-600">Integrity Trust</span>
-                        <span className={`font-bold ${isDanger ? 'text-red-700 font-mono' : 'text-slate-900 font-mono'}`}>
+                        <span className="font-bold text-slate-900 font-mono">
                           {c.trust_score}%
                         </span>
                       </div>
@@ -596,7 +591,7 @@ export default function App() {
                         {scenario.title}
                       </span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                        scenario.severity === 'CRITICAL' ? 'bg-red-50 text-red-700 border-red-200' :
+                        scenario.severity === 'CRITICAL' ? 'bg-slate-900 text-white border border-slate-800' :
                         scenario.severity === 'HIGH' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                         scenario.severity === 'MEDIUM' ? 'bg-slate-100 text-slate-700 border-slate-200' :
                         'bg-slate-50 text-slate-600 border border-slate-200'
@@ -655,7 +650,7 @@ export default function App() {
             </div>
 
             {broadcastNoticeSent && (
-              <p className="text-xs font-bold text-emerald-700">
+              <p className="text-xs font-bold text-slate-800">
                 ✓ {broadcastNoticeSent}
               </p>
             )}

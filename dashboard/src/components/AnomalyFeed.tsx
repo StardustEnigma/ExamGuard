@@ -89,11 +89,11 @@ export const AnomalyFeed: React.FC<AnomalyFeedProps> = ({
   const getSeverityBadge = (sev: string) => {
     switch (sev) {
       case 'CRITICAL':
-        return 'bg-red-50 text-red-700 border border-red-200';
+        return 'bg-slate-900 text-white border border-slate-800';
       case 'HIGH':
-        return 'bg-amber-50 text-amber-700 border border-amber-200';
+        return 'bg-amber-50 text-amber-800 border border-amber-200';
       case 'MEDIUM':
-        return 'bg-slate-100 text-slate-700 border border-slate-200';
+        return 'bg-slate-100 text-slate-800 border border-slate-200';
       default:
         return 'bg-slate-50 text-slate-600 border border-slate-200';
     }
